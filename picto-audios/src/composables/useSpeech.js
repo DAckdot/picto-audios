@@ -11,7 +11,7 @@ export function useSpeech() {
   const speak = (text) => {
     return new Promise((resolve) => {
       if (!isSupported) {
-        console.error("Speech synthesis is not supported in this browser")
+        console.warn("Speech synthesis is not supported in this browser")
         resolve()
         return
       }
@@ -32,13 +32,19 @@ export function useSpeech() {
 
       // Handle errors
       utterance.onerror = (event) => {
-        console.error("Speech synthesis error:", event)
+        console.warn("Speech synthesis error:", event.error)
         isSpeaking.value = false
-        resolve()
+        resolve() // Resolve to avoid unhandled promise rejection
       }
 
       // Speak the text
-      synth.speak(utterance)
+      try {
+        synth.speak(utterance)
+      } catch (error) {
+        console.error("Error while speaking:", error)
+        isSpeaking.value = false
+        resolve()
+      }
     })
   }
 
