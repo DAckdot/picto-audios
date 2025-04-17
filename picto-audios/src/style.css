@@ -1,0 +1,29 @@
+@import 'tailwindcss';
+@import "tailwindcss/preflight";
+
+:root {
+  --background: 255, 255, 255; /* Main background */
+  --foreground: 0, 0, 0; /* Main text */
+  --primary: 0, 123, 255; /* Primary color */
+  --secondary: 108, 117, 125; /* Secondary color */
+  --accent: 40, 167, 69; /* Accent color */
+}
+
+body {
+  font-family: 'Georgia', serif; /* Elegant typography */
+}
+
+img {
+  width: 150px; /* Enlarge images */
+  height: 150px;
+  object-fit: cover;
+}
+
+.bottom-bar {
+  height: 80px; /* Enlarge playback bar */
+  background-color: rgb(0, 123, 255); /* Distinct color */
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
