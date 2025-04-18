@@ -13,8 +13,8 @@
         >
           <div class="aspect-square bg-green-100 flex items-center justify-center overflow-hidden">
             <img 
-              :src="`https://unavatar.io/${pictogram.label}?ttl=1h&timestamp=${Date.now()}`" 
-              :alt="pictogram.label" 
+              src="../assets/picto_ex.png" 
+              alt="Pictogram" 
               loading="lazy"
               class="object-contain h-full w-full p-2"
             />

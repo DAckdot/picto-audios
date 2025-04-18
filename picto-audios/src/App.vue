@@ -73,16 +73,15 @@ import BottomBar from "./components/BottomBar.vue"
 
 // State
 const sidebarOpen = ref(false)
-const activeFolder = ref("all")
+const activeFolder = ref("saludos") // Default to the first folder
 const searchQuery = ref("")
 const queue = ref([])
 
 // Speech handler
-const { speak } = useSpeechHandler()
+const { speak, stop } = useSpeechHandler()
 
 // Sample data
 const folders = [
-  { id: "todo", name: "Todo", icon: "all" },
   { id: "saludos", name: "Saludos", icon: "saludos" },
   { id: "comida", name: "Comida", icon: "comida" },
   { id: "actividades", name: "Actividades", icon: "actividades" },
@@ -138,7 +137,6 @@ const currentFolder = computed(() => {
 })
 
 const filteredPictograms = computed(() => {
-  if (activeFolder.value === "all") return pictograms
   return pictograms.filter(p => p.folder === activeFolder.value)
 })
 

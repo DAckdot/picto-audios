@@ -12,7 +12,8 @@
 
 html,
 :host {
-  text-size-adjust: 100%; /* Replace -webkit-text-size-adjust */
+  -webkit-text-size-adjust: 100%; /* Para navegadores basados en WebKit */
+  text-size-adjust: 100%; /* Propiedad estándar para otros navegadores */
 }
 
 body {

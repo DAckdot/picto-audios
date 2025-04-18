@@ -1,21 +1,17 @@
 import { createApp } from 'vue'
 import './style.css'
 import App from './App.vue'
-import meSpeak from "mespeak"
 
-// Detecta el idioma del navegador
-const userLanguage = navigator.language || navigator.userLanguage;
-const voiceFile = userLanguage.startsWith('es') ? '/es.json' : '/en-us.json';
-
-// Carga la configuración y la voz según el idioma detectado
-fetch('/mespeak_config.json')
-  .then(response => response.json())
-  .then(data => meSpeak.loadConfig(data))
-  .catch(error => console.error("Failed to load meSpeak config:", error))
-
-fetch(voiceFile) // Carga el archivo de voz basado en el idioma
-  .then(response => response.json())
-  .then(data => meSpeak.loadVoice(data))
-  .catch(error => console.error(`Failed to load meSpeak voice for ${userLanguage}:`, error))
+// Detecta el idioma del navegador y configura la voz predeterminada
+const synth = window.speechSynthesis;
+synth.onvoiceschanged = () => {
+  const voices = synth.getVoices();
+  const spanishVoice = voices.find(voice => voice.lang === "es-419") || voices.find(voice => voice.lang.startsWith("es"));
+  if (spanishVoice) {
+    console.log(`Voz predeterminada configurada: ${spanishVoice.name} (${spanishVoice.lang})`);
+  } else {
+    console.warn("No se encontró una voz en español. Usando la voz predeterminada del navegador.");
+  }
+};
 
 createApp(App).mount('#app')

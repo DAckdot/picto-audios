@@ -1,9 +1,8 @@
 <template>
   <aside 
     :class="[
-      'bg-primary w-64 md:w-48 lg:w-64 border-r border-primary-dark transition-transform duration-300 ease-in-out',
-      isOpen ? 'translate-x-0' : '-translate-x-full',
-      'fixed md:static top-0 left-0 h-full z-40 md:z-0'
+      'bg-primary w-64 border-r border-primary-dark transition-transform duration-300 ease-in-out',
+      'h-full flex-shrink-0'
     ]"
   >
     <div class="p-4 border-b border-primary-dark">
@@ -17,35 +16,34 @@
       />
     </div>
     <nav class="p-4 overflow-y-auto h-full">
-      <h2 class="text-sm font-semibold text-secondary uppercase tracking-wider mb-2">Carpetas</h2>
-      <ul class="space-y-1">
-        <li 
-          v-for="folder in filteredFolders" 
-          :key="folder.id"
-        >
-          <button 
-            @click="selectFolder(folder.id)" 
-            :class="[
-              'w-full text-left px-3 py-2 rounded-full flex items-center transition-colors',
-              selectedFolder === folder.id 
-                ? 'bg-green-500 text-white' 
-                : 'hover:bg-primary-light text-secondary'
-            ]"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" :class="selectedFolder === folder.id ? 'text-white' : 'text-secondary'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path d="M3 7h18a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z" />
-              <path d="M3 7l3-3h12l3 3" />
-            </svg>
-            {{ folder.name }}
-          </button>
+      <h2 class="text-sm font-semibold text-secondary uppercase tracking-wider mb-4">Carpetas</h2>
+      <ul class="space-y-2">
+        <li v-for="folder in filteredFolders" :key="folder.id">
+          <FolderItem 
+            :folder="folder" 
+            :isSelected="selectedFolder === folder.id" 
+            @select-folder="selectFolder"
+          />
         </li>
       </ul>
+      <div class="mt-4">
+        <button 
+          @click="addFolder" 
+          class="w-full px-4 py-3 bg-green-500 text-white rounded-lg flex items-center justify-center hover:bg-green-600 transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M12 4v16m8-8H4" />
+          </svg>
+          Agregar Carpeta
+        </button>
+      </div>
     </nav>
   </aside>
 </template>
 
 <script setup>
 import { ref, computed } from "vue"
+import FolderItem from "./FolderItem.vue"
 
 const props = defineProps({
   folders: {
@@ -62,10 +60,11 @@ const props = defineProps({
   },
 })
 
-defineEmits(["select-folder", "close-sidebar"])
+const emit = defineEmits(["select-folder", "close-sidebar", "add-folder"])
 
 // State
 const searchQuery = ref("")
+const hoveredFolder = ref(null)
 
 // Computed properties
 const filteredFolders = computed(() => {
@@ -75,11 +74,12 @@ const filteredFolders = computed(() => {
   )
 })
 
+// Methods
 const selectFolder = (folderId) => {
-  $emit("select-folder", folderId)
+  emit("select-folder", folderId)
+}
+
+const addFolder = () => {
+  emit("add-folder")
 }
 </script>
-
-<style scoped>
-/* Add any additional styles if needed */
-</style>

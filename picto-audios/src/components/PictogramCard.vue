@@ -1,8 +1,8 @@
 <template>
   <div class="pictogram-card" @click="handleClick">
-    <img :src="pictogram.image" :alt="pictogram.name" />
+    <img src="../assets/picto_ex.png" alt="Pictogram" />
     <p>{{ pictogram.name }}</p>
-    <button @click.stop="handleAddToQueue">Add to Queue</button>
+    <button class="bg-green-400" @click.stop="handleAddToQueue">Add to Queue</button>
   </div>
 </template>
 
