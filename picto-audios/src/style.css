@@ -10,6 +10,11 @@
   --accent: 40, 167, 69; /* Accent color */
 }
 
+html,
+:host {
+  text-size-adjust: 100%; /* Replace -webkit-text-size-adjust */
+}
+
 body {
   font-family: 'Georgia', serif; /* Elegant typography */
 }
@@ -20,7 +25,7 @@ img {
   object-fit: cover;
 }
 
-.bottom-bar {
+bottom-bar {
   height: 80px; /* Enlarge playback bar */
   background-color: rgb(0, 123, 255); /* Distinct color */
   color: white;

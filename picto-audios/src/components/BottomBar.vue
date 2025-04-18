@@ -50,7 +50,7 @@
 
 <script setup>
 import { ref } from "vue"
-import { useSpeech } from "../composables/useSpeech"
+import { useSpeechHandler } from "../composables/useSpeechHandler"
 
 const props = defineProps({
   queue: {
@@ -62,7 +62,7 @@ const props = defineProps({
 const emit = defineEmits(["update-queue"])
 
 const draggedIndex = ref(null)
-const { speak } = useSpeech()
+const { speak } = useSpeechHandler() // Usa useSpeechHandler para decidir entre useMeSpeak y useSpeech
 
 const handleDragStart = (index) => {
   draggedIndex.value = index

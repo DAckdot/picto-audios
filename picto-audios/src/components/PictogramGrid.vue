@@ -13,8 +13,9 @@
         >
           <div class="aspect-square bg-green-100 flex items-center justify-center overflow-hidden">
             <img 
-              :src="`https://unavatar.io/${pictogram.label}?ttl=1h`" 
+              :src="`https://unavatar.io/${pictogram.label}?ttl=1h&timestamp=${Date.now()}`" 
               :alt="pictogram.label" 
+              loading="lazy"
               class="object-contain h-full w-full p-2"
             />
           </div>
@@ -24,10 +25,13 @@
         </button>
         <button 
           @click="$emit('add-to-queue', pictogram)" 
-          class="w-full py-1 px-2 bg-green-600 text-white text-xs font-medium hover:bg-green-700 transition-colors duration-200 focus:outline-none"
-          :aria-label="`Add ${pictogram.label} to queue`"
+          class="w-full py-1 px-2 bg-green-600 text-white text-xs font-medium hover:bg-green-700 transition-colors duration-200 focus:outline-none flex items-center justify-center space-x-2"
+          :aria-label="`Agregar ${pictogram.label} a la lista`"
         >
-          Add to Queue
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M12 4v16m8-8H4"/>
+          </svg>
+          <span>Agregar</span>
         </button>
       </div>
     </div>
@@ -35,8 +39,6 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from "vue"
-
 const props = defineProps({
   pictograms: {
     type: Array,

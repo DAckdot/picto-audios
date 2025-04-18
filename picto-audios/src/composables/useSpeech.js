@@ -16,6 +16,12 @@ export function useSpeech() {
         return
       }
 
+      if (!text || typeof text !== "string" || text.trim() === "") {
+        console.warn("Invalid text provided for speech synthesis")
+        resolve()
+        return
+      }
+
       // Cancel any ongoing speech
       synth.cancel()
 
