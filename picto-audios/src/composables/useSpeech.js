@@ -65,7 +65,7 @@ export function useSpeech() {
       utterance.voice = selectedVoice.value; // Ensure this is a valid SpeechSynthesisVoice
       utterance.voice = selectedVoice.value; // Ensure this is a valid SpeechSynthesisVoice
       utterance.rate = 1.355; // Aumenta la velocidad (1.0 es normal, 2.0 es el doble)
-      utterance.volume = 55.54; // Aumenta el volumen (1.0 es el máximo)
+      utterance.volume = 0.95; // Aumenta el volumen (1.0 es el máximo)
       utterance.pitch = 2.3; // Ajusta el tono (opcional)
       isSpeaking.value = true;
 
