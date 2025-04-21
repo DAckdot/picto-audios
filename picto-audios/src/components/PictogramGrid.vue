@@ -1,5 +1,6 @@
 <template>
   <div class="p-4">
+    
     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
       <div 
         v-for="pictogram in pictograms" 
@@ -48,7 +49,3 @@ const props = defineProps({
 
 defineEmits(["play-pictogram", "add-to-queue"])
 </script>
-
-<style scoped>
-/* Add any additional styles if needed */
-</style>
