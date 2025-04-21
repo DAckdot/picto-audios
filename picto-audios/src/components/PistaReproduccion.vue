@@ -40,9 +40,9 @@
         <div class="w-20 h-20 bg-white rounded-md flex flex-col items-center justify-center border border-gray-300"
              :class="{ 'border-blue-500 border-2': isDraggingOver === index }">
           <img 
-            :src="item.image || '../assets/picto_ex.png'" 
+            :src="item.image || defaultImage" 
             :alt="item.label" 
-            class="object-contain h-12 w-12"
+            class="object-contain h-8 w-8"
           />
           <span class="text-xs text-gray-700 mt-1">{{ item.label }}</span>
         </div>
@@ -74,7 +74,9 @@ import { ref, watch, onMounted } from 'vue';
 import { useQueueHandler } from "../composables/useQueueHandler";
 import { useSpeech } from "../composables/useSpeech";
 import PlaybackControls from "./PlaybackControls.vue";
+import fallbackImage from '../assets/vue.svg';
 
+const defaultImage = fallbackImage;
 const props = defineProps({
   queue: {
     type: Array,
@@ -107,6 +109,7 @@ watch(() => props.queue, (newQueue) => {
 
 // Sincronizar la cola externa cuando cambia la interna
 watch(internalQueue, () => {
+  console.log("Queue updated:", internalQueue);  // Para depuración
   emit("update-queue", [...internalQueue]);
 }, { deep: true });
 
