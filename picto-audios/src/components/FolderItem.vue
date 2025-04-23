@@ -13,7 +13,7 @@
         <path d="M3 7l3-3h12l3 3" />
       </svg>
     </div>
-    <span class="folder-name font-medium">{{ folder.name }}</span>
+    <span class="folder-name font-bold text-xs">{{ folder.name }}</span>
   </div>
 </template>
 
