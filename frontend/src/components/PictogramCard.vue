@@ -5,15 +5,21 @@
     @click="handleClick"
   >
     <img
-      :src="pictogram.image || '../assets/picto_ex.png'" 
-      :alt="pictogram.name" 
+      :src="getImageSource(pictogram)" 
+      :alt="pictogram.FRASE || pictogram.label || 'Pictograma'" 
       class="object-contain h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24"
+      @error="handleImageError"
     />
-    <p class="text-sm sm:text-base md:text-sm font-medium text-green-600 mt-2 text-center leading-tight">{{ pictogram.label }}</p>
+    <p class="text-sm sm:text-base md:text-sm font-medium text-green-600 mt-2 text-center leading-tight">
+      {{ pictogram.FRASE || pictogram.label }}
+    </p>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue';
+import defaultImage from '../assets/picto_ex.png';
+
 const props = defineProps({
   pictogram: {
     type: Object,
@@ -25,10 +31,41 @@ const props = defineProps({
   },
 });
 
+const hasError = ref(false);
+
 const emit = defineEmits(["click"]);
 
 const handleClick = () => {
   emit("click", props.pictogram);
+};
+
+const handleImageError = () => {
+  hasError.value = true;
+};
+
+const getImageSource = (pictogram) => {
+  // Si hay un error al cargar la imagen o no tiene una imagen válida, usar la imagen por defecto
+  if (hasError.value) {
+    return defaultImage;
+  }
+  
+  // Si viene de la API, la imagen está en pictogram.PHOTO
+  if (pictogram.PHOTO) {
+    // Verificar si ya es una URL de datos completa
+    if (pictogram.PHOTO.startsWith('data:')) {
+      return pictogram.PHOTO;
+    }
+    // De lo contrario, asumimos que es una cadena base64 y construimos la URL
+    return `data:image/jpeg;base64,${pictogram.PHOTO}`;
+  }
+  
+  // Si viene de datos locales, la imagen está en pictogram.image
+  if (pictogram.image) {
+    return pictogram.image;
+  }
+  
+  // Si no tiene ninguna, usar la imagen por defecto
+  return defaultImage;
 };
 </script>
 

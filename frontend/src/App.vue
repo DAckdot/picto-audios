@@ -12,6 +12,7 @@
         :user-id="userId"
         :selected-folder="activeFolder" 
         @select-folder="selectFolder"
+        @change-user="changeUser"
       />
 
       <!-- Main Content -->
@@ -98,6 +99,13 @@ const loadFolders = async () => {
   } finally {
     loadingFolders.value = false;
   }
+};
+
+const changeUser = (newUserId) => {
+  console.log("Cambiando al usuario:", newUserId);
+  userId.value = newUserId;
+  activeFolder.value = null; // Reset selected folder
+  queue.value = []; // Reset queue when changing user
 };
 
 const selectFolder = (folderId) => {

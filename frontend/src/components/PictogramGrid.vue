@@ -11,12 +11,18 @@
     
     <!-- Información de diagnóstico -->
     <div v-if="connectionStatus" class="mb-4 bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded">
-      <strong class="font-bold">Estado de conexión: </strong>
+      <strong class="font-bold">Estado: </strong>
       <span class="block sm:inline">{{ connectionStatus }}</span>
     </div>
     
+    <!-- Indicador de carga para pictogramas -->
+    <div v-if="loadingPictograms" class="flex items-center justify-center p-8">
+      <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-500 mr-2"></div>
+      <span>Cargando pictogramas...</span>
+    </div>
+    
     <!-- Resto del contenido -->
-    <div v-if="pictograms.length === 0" class="flex flex-col items-center space-y-6">
+    <div v-else-if="pictograms.length === 0" class="flex flex-col items-center space-y-6">
       <div class="text-center text-gray-500 mt-8 mb-4">
         No se encontraron pictogramas en esta carpeta (ID: {{ folderId }})
       </div>
@@ -51,7 +57,7 @@
     </div>
   </div>
 
-  <!-- Modal de carga -->
+  <!-- Modal de carga para subir pictograma -->
   <div v-if="isLoading" class="modal-overlay flex items-center justify-center">
     <div class="bg-white p-5 rounded-lg shadow-lg text-center">
       <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500 mx-auto mb-4"></div>
@@ -116,6 +122,7 @@ const props = defineProps({
 
 const emit = defineEmits(["add-to-queue"]);
 
+// Variables de estado separadas para diferentes tipos de carga
 const pictograms = ref([]);
 const isModalOpen = ref(false);
 const newPictogramLabel = ref("");
@@ -123,7 +130,10 @@ const selectedFile = ref(null);
 const previewImage = ref(null);
 const errorMessage = ref("");
 const connectionStatus = ref("");
+// Estado de carga para subir pictogramas (esto controla el modal de carga)
 const isLoading = ref(false);
+// Estado de carga para obtener pictogramas de una carpeta (esto controla el spinner en la vista)
+const loadingPictograms = ref(false);
 
 // Función para probar la conexión con el backend
 const testConnection = async () => {
@@ -146,7 +156,7 @@ const testConnection = async () => {
 
 const loadPictograms = async () => {
   try {
-    isLoading.value = true;
+    loadingPictograms.value = true;
     errorMessage.value = "";
     console.log("Cargando pictogramas para carpeta ID:", props.folderId);
     const response = await fetchPictogramsByFolder(props.folderId);
@@ -163,7 +173,7 @@ const loadPictograms = async () => {
     errorMessage.value = `No se pudieron cargar los pictogramas: ${error.message}`;
     pictograms.value = [];
   } finally {
-    isLoading.value = false;
+    loadingPictograms.value = false;
   }
 };
 
@@ -191,7 +201,7 @@ const handleFileUpload = (event) => {
   }
 };
 
-// Mejorar la compresión de imágenes para que sean más pequeñas
+// Mejorar significativamente la compresión de imágenes
 const compressImageToBase64 = (file) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -200,18 +210,19 @@ const compressImageToBase64 = (file) => {
       img.src = event.target.result;
       img.onload = () => {
         const canvas = document.createElement("canvas");
-        const maxSize = 300; // Max width or height
+        // Reducir drásticamente el tamaño máximo para garantizar compatibilidad
+        const maxSize = 100; // Aún más pequeño para asegurar tamaños compatibles con el backend
         let width = img.width;
         let height = img.height;
 
         if (width > height) {
           if (width > maxSize) {
-            height *= maxSize / width;
+            height = Math.round(height * maxSize / width);
             width = maxSize;
           }
         } else {
           if (height > maxSize) {
-            width *= maxSize / height;
+            width = Math.round(width * maxSize / height);
             height = maxSize;
           }
         }
@@ -221,8 +232,10 @@ const compressImageToBase64 = (file) => {
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, width, height);
         
-        // Usar una compresión más agresiva (0.5 en lugar de 0.7)
-        resolve(canvas.toDataURL("image/jpeg", 0.5));
+        // Usar una compresión extrema (0.1 = 90% de compresión)
+        const compressedImage = canvas.toDataURL("image/jpeg", 0.1);
+        console.log(`Imagen comprimida de ${width}x${height} píxeles, tamaño: ${compressedImage.length} caracteres`);
+        resolve(compressedImage);
       };
       img.onerror = (error) => reject(error);
     };
@@ -246,8 +259,9 @@ const uploadPictogram = async () => {
     // Verificar tamaño de la imagen comprimida
     console.log(`Tamaño de la imagen comprimida: ${compressedImage.length} caracteres`);
     
-    if (compressedImage.length > 1500000) {
-      alert("La imagen es demasiado grande incluso después de comprimirla. Por favor, selecciona una imagen más pequeña.");
+    if (compressedImage.length > 500000) { // Reducido a 500KB
+      errorMessage.value = "La imagen es demasiado grande. Intenta con una imagen más pequeña.";
+      alert("La imagen es demasiado grande incluso después de comprimirla. Por favor, selecciona una imagen más pequeña o con menos detalle.");
       isLoading.value = false;
       return;
     }
@@ -257,9 +271,18 @@ const uploadPictogram = async () => {
     
     if (result.message && result.message.includes("Error")) {
       errorMessage.value = result.message;
+      alert(`Error: ${result.message}`);
+    } else if (result.error) {
+      errorMessage.value = `Error: ${result.error}`;
+      alert(`Error del servidor: ${result.error}`);
     } else {
       await loadPictograms();
       closeModal();
+      // Mostrar mensaje de éxito
+      connectionStatus.value = "Pictograma creado correctamente";
+      setTimeout(() => {
+        connectionStatus.value = "";
+      }, 3000);
     }
   } catch (error) {
     console.error("Error al subir el pictograma:", error);

@@ -3,6 +3,31 @@
     <div class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-md">
       <h1 class="text-2xl font-bold mb-6 text-gray-800">Diagnóstico de Conexión</h1>
       
+      <!-- Sección de estado del servidor -->
+      <div class="mb-6 p-4 rounded-lg" :class="serverStatus.bgColor">
+        <h2 class="font-bold mb-2" :class="serverStatus.textColor">Estado del servidor: {{ serverStatus.text }}</h2>
+        <p v-if="serverStatus.details" class="text-sm" :class="serverStatus.textColor">{{ serverStatus.details }}</p>
+        <div class="mt-3 flex items-center" v-if="serverLatency >= 0">
+          <span class="mr-2 text-sm">Latencia:</span>
+          <div class="bg-gray-200 h-2 flex-grow rounded-full overflow-hidden">
+            <div 
+              class="h-full rounded-full" 
+              :class="serverLatency > 3000 ? 'bg-red-500' : serverLatency > 1000 ? 'bg-yellow-500' : 'bg-green-500'"
+              :style="{width: `${Math.min(100, serverLatency / 50)}%`}"
+            ></div>
+          </div>
+          <span class="ml-2 text-sm">{{ serverLatency }}ms</span>
+        </div>
+        <button 
+          @click="checkDetailedServerStatus" 
+          class="mt-3 px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 flex items-center"
+          :disabled="isCheckingServer"
+        >
+          <div v-if="isCheckingServer" class="mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          <span>{{ isCheckingServer ? 'Verificando...' : 'Verificar estado del servidor' }}</span>
+        </button>
+      </div>
+      
       <div class="space-y-4">
         <!-- Estado general -->
         <div class="p-4 rounded-lg" :class="overallStatus.bgColor">
@@ -142,12 +167,15 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { checkConnection, fetchUsers, fetchFoldersByUser, createPictogram } from '../api';
+import { ref, computed, onMounted } from 'vue';
+import { checkConnection, fetchUsers, fetchFoldersByUser, createPictogram, checkServerStatus } from '../api';
 
 const apiBaseURL = "https://pb-ykap.onrender.com/index.php";
 const isLoading = ref(false);
 const testFolderId = ref(1);
+const isCheckingServer = ref(false);
+const serverLatency = ref(-1);
+const detailedServerInfo = ref(null);
 
 const testResults = ref({
   apiBase: { text: 'No probado', color: 'text-gray-500', details: null },
@@ -182,6 +210,51 @@ const overallStatus = computed(() => {
     text: 'Algunos tests pendientes',
     bgColor: 'bg-yellow-100',
     textColor: 'text-yellow-800'
+  };
+});
+
+const serverStatus = computed(() => {
+  if (!detailedServerInfo.value) {
+    return {
+      text: 'No verificado',
+      bgColor: 'bg-gray-100',
+      textColor: 'text-gray-800',
+      details: 'Haz clic en "Verificar estado del servidor" para obtener información detallada.'
+    };
+  }
+  
+  if (!detailedServerInfo.value.available) {
+    return {
+      text: 'No disponible',
+      bgColor: 'bg-red-100',
+      textColor: 'text-red-800',
+      details: detailedServerInfo.value.message || 'El servidor no está respondiendo.'
+    };
+  }
+  
+  if (detailedServerInfo.value.possibleHibernation) {
+    return {
+      text: 'Despertando',
+      bgColor: 'bg-yellow-100',
+      textColor: 'text-yellow-800',
+      details: 'El servidor está despertando de hibernación. Las operaciones pueden tardar un poco la primera vez, pero deberían funcionar después de unos segundos.'
+    };
+  }
+  
+  if (detailedServerInfo.value.latency > 1000) {
+    return {
+      text: 'Lento',
+      bgColor: 'bg-yellow-100',
+      textColor: 'text-yellow-800',
+      details: 'El servidor está respondiendo, pero con alta latencia. Algunas operaciones podrían fallar por timeout.'
+    };
+  }
+  
+  return {
+    text: 'Disponible',
+    bgColor: 'bg-green-100',
+    textColor: 'text-green-800',
+    details: 'El servidor está respondiendo correctamente.'
   };
 });
 
@@ -285,13 +358,23 @@ async function testPictogramasPost() {
   try {
     testResults.value.pictogramas = { text: 'Probando...', color: 'text-blue-500', details: null };
     
-    // Crear un pictograma de prueba pequeño
+    // Crear un pictograma de prueba extremadamente pequeño
+    // Esta imagen es 1x1 pixel y prácticamente vacía para asegurar que funcione
     const testImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
+    
+    // Añadir timestamp al texto para identificar cada prueba
+    const testPhrase = `Test desde diagnóstico (${new Date().toISOString()})`;
+    
+    console.log(`Intentando crear pictograma de prueba en carpeta ID: ${testFolderId.value}`);
+    console.log(`Tamaño de la imagen de prueba: ${testImage.length} caracteres`);
+    
     const response = await createPictogram(
       testFolderId.value, 
-      "Test desde diagnóstico", 
+      testPhrase, 
       testImage
     );
+    
+    console.log("Respuesta completa de prueba de pictograma:", response);
     
     if (response.id) {
       testResults.value.pictogramas = { 
@@ -313,10 +396,11 @@ async function testPictogramasPost() {
       };
     }
   } catch (error) {
+    console.error("Error en test de pictogramas:", error);
     testResults.value.pictogramas = { 
       text: 'Error', 
       color: 'text-red-600', 
-      details: error.toString()
+      details: `Error completo: ${error.toString()}\n\nPosibles causas:\n- La carpeta no existe\n- Problemas con la base de datos\n- La imagen es demasiado grande\n- Timeout de conexión`
     };
   }
 }
@@ -346,4 +430,27 @@ function resetTests() {
     pictogramas: { text: 'No probado', color: 'text-gray-500', details: null }
   };
 }
+
+async function checkDetailedServerStatus() {
+  try {
+    isCheckingServer.value = true;
+    const status = await checkServerStatus();
+    detailedServerInfo.value = status;
+    serverLatency.value = status.latency;
+    console.log('Estado detallado del servidor:', status);
+  } catch (error) {
+    console.error('Error al verificar estado del servidor:', error);
+    detailedServerInfo.value = {
+      available: false,
+      message: `Error: ${error.message}`
+    };
+  } finally {
+    isCheckingServer.value = false;
+  }
+}
+
+onMounted(() => {
+  // Verificar estado del servidor automáticamente al cargar
+  checkDetailedServerStatus();
+});
 </script>
