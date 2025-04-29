@@ -1,6 +1,8 @@
-import { createApp } from 'vue'
-import './style.css'
-import App from './App.vue'
+import { createApp } from 'vue';
+import { createRouter, createWebHistory } from 'vue-router';
+import './style.css';
+import App from './App.vue';
+import TestConnectionView from './views/TestConnectionView.vue';
 
 // Detecta el idioma del navegador y configura la voz predeterminada
 const synth = window.speechSynthesis;
@@ -14,4 +16,19 @@ synth.onvoiceschanged = () => {
   }
 };
 
-createApp(App).mount('#app')
+// Definir rutas
+const routes = [
+  { path: '/', component: App },
+  { path: '/diagnostico', component: TestConnectionView }
+];
+
+// Crear router
+const router = createRouter({
+  history: createWebHistory(),
+  routes
+});
+
+// Crear app
+const app = createApp(App);
+app.use(router);
+app.mount('#app');
