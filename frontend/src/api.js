@@ -6,6 +6,16 @@ const RETRY_DELAY = 1000; // ms entre reintentos
 // Función para esperar un tiempo específico
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+// Limpiar respuestas que contienen datos no deseados
+const cleanResponse = (responseText) => {
+    // Buscar el inicio del JSON válido
+    const jsonStartIndex = responseText.indexOf('[') >= 0 ? responseText.indexOf('[') : responseText.indexOf('{');
+    if (jsonStartIndex !== -1) {
+        return responseText.slice(jsonStartIndex).trim(); // Retornar solo el JSON válido
+    }
+    return responseText; // Si no se encuentra JSON, retornar el texto original
+};
+
 // Función auxiliar para manejar errores y depuración con reintentos
 async function fetchWithRetriesAndErrorHandling(url, options = {}, attempts = RETRY_ATTEMPTS) {
     console.log(`Realizando petición a: ${url} (Intentos restantes: ${attempts})`);
@@ -41,26 +51,29 @@ async function fetchWithRetriesAndErrorHandling(url, options = {}, attempts = RE
         // Capturar texto completo de la respuesta
         const responseText = await response.text();
         console.log(`Respuesta texto de ${url}:`, responseText);
-        
+
+        // Limpiar la respuesta si contiene datos no deseados
+        const cleanedResponseText = cleanResponse(responseText);
+
         // Manejar caso especial: 404 con mensaje "No se encontraron pictogramas" - esto es válido
-        if (response.status === 404 && responseText.includes("No se encontraron pictogramas")) {
+        if (response.status === 404 && cleanedResponseText.includes("No se encontraron pictogramas")) {
             return []; // Devolver array vacío en lugar de error
         }
         
         // Si no es una respuesta exitosa para otros casos
         if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}, Response: ${responseText}`);
+            throw new Error(`HTTP error! Status: ${response.status}, Response: ${cleanedResponseText}`);
         }
         
         // Intentar parsear como JSON si tiene contenido
-        if (responseText.trim()) {
+        if (cleanedResponseText.trim()) {
             try {
-                const data = JSON.parse(responseText);
+                const data = JSON.parse(cleanedResponseText);
                 console.log(`Respuesta JSON parseada de ${url}:`, data);
                 return data;
             } catch (jsonError) {
-                console.warn(`La respuesta no es JSON válido:`, jsonError);
-                return { message: responseText };
+                console.warn(`La respuesta no es JSON válido después de limpiar:`, jsonError);
+                return { message: cleanedResponseText };
             }
         } else {
             return { message: "Respuesta vacía del servidor" };
@@ -259,14 +272,13 @@ export async function createPictogram(folderId, phrase, photo) {
     const data = {
         COD_CARPETA: folderId,
         FRASE: phrase,
-        FOTO: photo,  // Campo correcto en la base de datos
         PHOTO: photo  // También enviamos PHOTO para compatibilidad con el backend
     };
 
     console.log("Creando pictograma con datos:", {
         COD_CARPETA: folderId,
         FRASE: phrase,
-        FOTO: photo ? `Base64 image (length: ${photo.length})` : "No image"
+        PHOTO: photo ? `Base64 image (length: ${photo.length})` : "No image"
     });
 
     try {
@@ -336,6 +348,68 @@ export async function updateFolder(folderId, newName) {
         return { 
             success: false,
             message: `Error al actualizar carpeta: ${error.message}`,
+            error: error.toString() 
+        };
+    }
+}
+
+export async function updatePictogram(pictogramId, updateData) {
+    console.log(`Actualizando pictograma con ID=${pictogramId}`, updateData);
+    
+    // Verificar datos de entrada
+    if (!pictogramId) {
+        console.error("ID de pictograma no proporcionado");
+        return { success: false, message: "Se requiere ID de pictograma" };
+    }
+    
+    // Validar que hay datos a actualizar y asegurarse de que FRASE está siempre incluida
+    if (!updateData.FRASE && !updateData.PHOTO && !updateData.PHOTO) {
+        console.error("No se proporcionaron datos para actualizar");
+        return { success: false, message: "Se requiere al menos frase o imagen para actualizar" };
+    }
+    
+    try {
+        // Preparar los datos para el envío
+        const data = {};
+        
+        // SIEMPRE incluir la frase, incluso si solo se actualiza la imagen
+        if (updateData.FRASE !== undefined) {
+            data.FRASE = updateData.FRASE;
+        }
+        
+        // Dar preferencia a FOTO sobre PHOTO para compatibilidad
+        if (updateData.PHOTO) {
+            data.PHOTO = updateData.PHOTO;
+        } else if (updateData.PHOTO) {
+            data.PHOTO = updateData.PHOTO;
+        }
+        
+        console.log("Enviando solicitud para actualizar pictograma con datos:", {
+            FRASE: data.FRASE,
+            "Tamaño imagen": data.PHOTO ? `${data.PHOTO.length} caracteres` : "Sin cambios"
+        });
+        
+        const result = await fetchWithRetriesAndErrorHandling(`${API_BASE_URL}/pictogramas/${pictogramId}`, {
+            method: "PUT",
+            headers: { 
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+        
+        console.log("Respuesta de actualización de pictograma:", result);
+        
+        if (result && result.message && result.message.includes("actualizado")) {
+            return { success: true, message: result.message, id: pictogramId };
+        } else {
+            return { success: false, message: result.message || "Error desconocido al actualizar" };
+        }
+    } catch (error) {
+        console.error("Error al actualizar pictograma:", error);
+        return { 
+            success: false,
+            message: `Error al actualizar pictograma: ${error.message}`,
             error: error.toString() 
         };
     }

@@ -41,9 +41,11 @@
     <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
       <PictogramCard 
         v-for="pictogram in pictograms" 
-        :key="pictogram.id" 
+        :key="pictogram.COD_PICTOGRAMA || pictogram.id" 
         :pictogram="pictogram" 
-        @click="$emit('play-pictogram', pictogram)" 
+        @click="$emit('play-pictogram', pictogram)"
+        @pictogram-updated="handlePictogramUpdated"
+        @pictogram-deleted="handlePictogramDeleted"
       />
       <div 
         class="flex flex-col items-center justify-center bg-gray-200 border border-dashed border-gray-400 rounded-lg p-4 cursor-pointer hover:bg-gray-300"
@@ -224,7 +226,7 @@ const compressImageToBase64 = (file) => {
       img.onload = () => {
         const canvas = document.createElement("canvas");
         // Reducir drásticamente el tamaño máximo para garantizar compatibilidad
-        const maxSize = 100; // Aún más pequeño para asegurar tamaños compatibles con el backend
+        const maxSize = 120; // Ligeramente mayor para mantener calidad mínima aceptable
         let width = img.width;
         let height = img.height;
 
@@ -245,8 +247,8 @@ const compressImageToBase64 = (file) => {
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, width, height);
         
-        // Usar una compresión extrema (0.1 = 90% de compresión)
-        const compressedImage = canvas.toDataURL("image/jpeg", 0.1);
+        // Usar una compresión del 80% (0.2 = 80% de compresión)
+        const compressedImage = canvas.toDataURL("image/jpeg", 0.2);
         console.log(`Imagen comprimida de ${width}x${height} píxeles, tamaño: ${compressedImage.length} caracteres`);
         resolve(compressedImage);
       };
@@ -303,6 +305,35 @@ const uploadPictogram = async () => {
     alert("Ocurrió un error al subir el pictograma. Por favor, intenta de nuevo.");
   } finally {
     isLoading.value = false;
+  }
+};
+
+// Manejadores para las actualizaciones y eliminaciones de pictogramas
+const handlePictogramUpdated = (updatedPictogram) => {
+  // Encontrar y actualizar el pictograma en la lista
+  const index = pictograms.value.findIndex(p => p.COD_PICTOGRAMA === updatedPictogram.COD_PICTOGRAMA);
+  if (index !== -1) {
+    pictograms.value[index] = { ...pictograms.value[index], ...updatedPictogram };
+    
+    // Mostrar mensaje de confirmación
+    connectionStatus.value = "Pictograma actualizado correctamente";
+    setTimeout(() => {
+      connectionStatus.value = "";
+    }, 3000);
+  }
+};
+
+const handlePictogramDeleted = (deletedPictogramId) => {
+  // Eliminar el pictograma de la lista
+  const index = pictograms.value.findIndex(p => p.COD_PICTOGRAMA == deletedPictogramId);
+  if (index !== -1) {
+    pictograms.value.splice(index, 1);
+    
+    // Mostrar mensaje de confirmación
+    connectionStatus.value = "Pictograma eliminado correctamente";
+    setTimeout(() => {
+      connectionStatus.value = "";
+    }, 3000);
   }
 };
 
