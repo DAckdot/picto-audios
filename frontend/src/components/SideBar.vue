@@ -47,7 +47,7 @@
         v-model="searchQuery"
         id="search-folders"
         name="search-folders"
-        class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 focus:ring-2 focus:ring-green-500 focus:outline-none"
+        class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 focus:ring-2 focus:ring-lime-400 focus:outline-none"
       />
     </div>
     
@@ -87,7 +87,7 @@
       <div class="mt-6">
         <button 
           @click="addFolder" 
-          class="w-full px-4 py-3 bg-green-500 text-white rounded-lg flex items-center justify-center hover:bg-green-600 transition-colors"
+          class="w-full px-4 py-3 bg-lime-400 text-white rounded-lg flex items-center justify-center hover:bg-lime-500 transition-colors"
           :disabled="isCreatingFolder"
         >
           <div v-if="isCreatingFolder" class="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>

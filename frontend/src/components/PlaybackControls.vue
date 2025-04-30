@@ -2,7 +2,7 @@
   <div class="flex items-center space-x-2">
     <button 
       @click="handlePlay" 
-      class="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600 flex items-center space-x-1 text-sm"
+      class="px-2 py-1 bg-lime-400 text-white rounded hover:bg-lime-500 flex items-center space-x-1 text-sm"
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <polygon points="5 3 19 12 5 21 5 3"/>

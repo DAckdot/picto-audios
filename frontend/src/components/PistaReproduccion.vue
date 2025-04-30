@@ -1,5 +1,5 @@
 <template>
-  <header class="bg-black border-b border-green-700 p-4 flex flex-col space-y-4">
+  <header class="bg-zinc-700 border-b border-lime-400 p-4 flex flex-col space-y-4">
     <!-- Header Title -->
     <div class="flex items-center justify-between">
       <h1 class="text-white text-lg font-semibold">Tablero de comunicación</h1>

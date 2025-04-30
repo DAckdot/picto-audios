@@ -1,7 +1,7 @@
 <template>
   <div 
-    class="pictogram-card flex flex-col items-center bg-white rounded-lg border border-green-600 overflow-hidden hover:shadow-lg transition-shadow duration-200 w-full max-w-[200px] mx-auto aspect-square cursor-pointer"
-    :class="{ 'bg-green-200': isSelected }"
+    class="pictogram-card flex flex-col items-center bg-white rounded-lg border border-lime-500 overflow-hidden hover:shadow-lg transition-shadow duration-200 w-full max-w-[200px] mx-auto aspect-square cursor-pointer"
+    :class="{ 'bg-lime-200': isSelected }"
     @click="handleClick"
   >
     <img
@@ -10,7 +10,7 @@
       class="object-contain h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24"
       @error="handleImageError"
     />
-    <p class="text-sm sm:text-base md:text-sm font-medium text-green-600 mt-2 text-center leading-tight">
+    <p class="text-sm sm:text-base md:text-sm font-medium text-lime-700 mt-2 text-center leading-tight">
       {{ pictogram.FRASE || pictogram.label }}
     </p>
   </div>

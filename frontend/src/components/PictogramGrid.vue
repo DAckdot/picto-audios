@@ -308,7 +308,7 @@ watch(() => props.folderId, (newId, oldId) => {
 /* Scroll personalizado */
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #0406042b #f0f0f0;
+  scrollbar-color: rgba(163, 230, 53, 0.5) #f0f0f0; /* lime-400 con transparencia */
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -316,7 +316,7 @@ watch(() => props.folderId, (newId, oldId) => {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #4caf50;
+  background-color: rgb(163, 230, 53); /* lime-400 exacto */
   border-radius: 4px;
 }
 
@@ -359,12 +359,16 @@ watch(() => props.folderId, (newId, oldId) => {
 }
 
 .btn-primary {
-  background-color: #4caf50;
+  background-color: rgb(163, 230, 53); /* lime-400 exacto */
   color: white;
   padding: 8px 16px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+}
+
+.btn-primary:hover {
+  background-color: rgb(132, 204, 22); /* lime-500 para hover */
 }
 
 .btn-secondary {
