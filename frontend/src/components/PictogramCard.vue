@@ -49,7 +49,7 @@ const getImageSource = (pictogram) => {
     return defaultImage;
   }
   
-  // Si viene de la API, la imagen está en pictogram.PHOTO
+  // Si viene de la API, la imagen está en pictogram.PHOTO o pictogram.FOTO
   if (pictogram.PHOTO) {
     // Verificar si ya es una URL de datos completa
     if (pictogram.PHOTO.startsWith('data:')) {
@@ -57,6 +57,16 @@ const getImageSource = (pictogram) => {
     }
     // De lo contrario, asumimos que es una cadena base64 y construimos la URL
     return `data:image/jpeg;base64,${pictogram.PHOTO}`;
+  }
+  
+  // También revisar el campo correcto FOTO si existe
+  if (pictogram.FOTO) {
+    // Verificar si ya es una URL de datos completa
+    if (pictogram.FOTO.startsWith('data:')) {
+      return pictogram.FOTO;
+    }
+    // De lo contrario, asumimos que es una cadena base64 y construimos la URL
+    return `data:image/jpeg;base64,${pictogram.FOTO}`;
   }
   
   // Si viene de datos locales, la imagen está en pictogram.image

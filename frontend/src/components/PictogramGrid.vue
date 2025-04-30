@@ -113,14 +113,15 @@ import { ref, onMounted, watch } from "vue";
 import PictogramCard from "./PictogramCard.vue";
 import { fetchPictogramsByFolder, createPictogram, checkConnection } from "../api";
 
+// Define emitted events
+const emit = defineEmits(["play-pictogram", "add-to-queue"]);
+
 const props = defineProps({
   folderId: {
     type: Number,
     required: true,
   },
 });
-
-const emit = defineEmits(["add-to-queue"]);
 
 // Variables de estado separadas para diferentes tipos de carga
 const pictograms = ref([]);
@@ -161,17 +162,29 @@ const loadPictograms = async () => {
     console.log("Cargando pictogramas para carpeta ID:", props.folderId);
     const response = await fetchPictogramsByFolder(props.folderId);
     
-    if (response.message === "No se encontraron pictogramas") {
+    // Nos aseguramos de siempre tener un array, incluso si la respuesta es nula o indefinida
+    if (!response || response.message === "No se encontraron pictogramas") {
       console.log("No hay pictogramas en esta carpeta");
       pictograms.value = [];
     } else {
       console.log("Pictogramas cargados:", response);
-      pictograms.value = response;
+      pictograms.value = Array.isArray(response) ? response : [];
     }
   } catch (error) {
     console.error("Error al cargar pictogramas:", error);
-    errorMessage.value = `No se pudieron cargar los pictogramas: ${error.message}`;
-    pictograms.value = [];
+    // Si el error es un 404 con "No se encontraron pictogramas", no es realmente un error
+    if (error.message && (
+        error.message.includes("No se encontraron pictogramas") || 
+        error.message.includes("Status: 404")
+      )) {
+      console.log("No hay pictogramas en esta carpeta");
+      pictograms.value = [];
+      // No mostrar error en este caso
+      errorMessage.value = "";
+    } else {
+      errorMessage.value = `No se pudieron cargar los pictogramas: ${error.message}`;
+      pictograms.value = [];
+    }
   } finally {
     loadingPictograms.value = false;
   }

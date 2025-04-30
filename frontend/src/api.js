@@ -42,7 +42,12 @@ async function fetchWithRetriesAndErrorHandling(url, options = {}, attempts = RE
         const responseText = await response.text();
         console.log(`Respuesta texto de ${url}:`, responseText);
         
-        // Si no es una respuesta exitosa
+        // Manejar caso especial: 404 con mensaje "No se encontraron pictogramas" - esto es válido
+        if (response.status === 404 && responseText.includes("No se encontraron pictogramas")) {
+            return []; // Devolver array vacío en lugar de error
+        }
+        
+        // Si no es una respuesta exitosa para otros casos
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}, Response: ${responseText}`);
         }
@@ -186,7 +191,24 @@ export async function fetchFoldersByUser(userId) {
 }
 
 export async function fetchPictogramsByFolder(folderId) {
-    return fetchWithRetriesAndErrorHandling(`${API_BASE_URL}/pictogramas?carpeta_id=${folderId}`);
+    try {
+        const response = await fetchWithRetriesAndErrorHandling(`${API_BASE_URL}/pictogramas?carpeta_id=${folderId}`);
+        return response || [];
+    } catch (error) {
+        // Verificar si es el mensaje específico de "No se encontraron pictogramas"
+        if (error.message && error.message.includes("No se encontraron pictogramas")) {
+            console.log("No hay pictogramas en esta carpeta, retornando array vacío");
+            return [];
+        }
+        
+        // Si el status es 404, también retornar un array vacío
+        if (error.message && error.message.includes("Status: 404")) {
+            console.log("Carpeta sin pictogramas (404), retornando array vacío");
+            return [];
+        }
+        
+        throw error;
+    }
 }
 
 export async function createFolder(userId, name) {
@@ -237,13 +259,14 @@ export async function createPictogram(folderId, phrase, photo) {
     const data = {
         COD_CARPETA: folderId,
         FRASE: phrase,
-        PHOTO: photo
+        FOTO: photo,  // Campo correcto en la base de datos
+        PHOTO: photo  // También enviamos PHOTO para compatibilidad con el backend
     };
 
     console.log("Creando pictograma con datos:", {
         COD_CARPETA: folderId,
         FRASE: phrase,
-        PHOTO: photo ? `Base64 image (length: ${photo.length})` : "No image"
+        FOTO: photo ? `Base64 image (length: ${photo.length})` : "No image"
     });
 
     try {

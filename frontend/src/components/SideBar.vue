@@ -80,6 +80,7 @@
             :isSelected="selectedFolder == folder.COD_CARPETA" 
             @select-folder="selectFolder"
             @folder-updated="handleFolderUpdated"
+            @folder-deleted="handleFolderDeleted"
           />
         </li>
       </ul>
@@ -256,6 +257,41 @@ const handleFolderUpdated = (updatedFolder) => {
   const folderIndex = folders.value.findIndex(f => f.COD_CARPETA == updatedFolder.id);
   if (folderIndex >= 0) {
     folders.value[folderIndex].NOMBRE = updatedFolder.name;
+  }
+};
+
+// Función para manejar la eliminación de una carpeta
+const handleFolderDeleted = (deletedFolderId) => {
+  console.log(`Eliminando carpeta con ID ${deletedFolderId} de la lista`);
+  
+  // Verificar si la carpeta eliminada era la seleccionada actualmente
+  const wasSelected = props.selectedFolder == deletedFolderId;
+  
+  // Eliminar la carpeta del array
+  const folderIndex = folders.value.findIndex(f => f.COD_CARPETA == deletedFolderId);
+  if (folderIndex >= 0) {
+    folders.value.splice(folderIndex, 1);
+    
+    // Si era la carpeta seleccionada, seleccionar otra
+    if (wasSelected && folders.value.length > 0) {
+      // Seleccionar la siguiente carpeta, o la anterior si era la última
+      const nextIndex = folderIndex < folders.value.length ? folderIndex : folderIndex - 1;
+      if (nextIndex >= 0) {
+        emit("select-folder", folders.value[nextIndex].COD_CARPETA);
+      } else {
+        // Si no hay más carpetas, establecer selectedFolder a null
+        emit("select-folder", null);
+      }
+    }
+    
+    // Mostrar mensaje de confirmación
+    folderStatus.value = "Carpeta eliminada correctamente";
+    folderStatusClass.value = "bg-green-100 text-green-700";
+    
+    // Limpiar mensaje después de 3 segundos
+    setTimeout(() => {
+      folderStatus.value = "";
+    }, 3000);
   }
 };
 </script>
