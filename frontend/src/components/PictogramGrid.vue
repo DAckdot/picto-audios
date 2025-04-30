@@ -43,7 +43,7 @@
         v-for="pictogram in pictograms" 
         :key="pictogram.COD_PICTOGRAMA || pictogram.id" 
         :pictogram="pictogram" 
-        @click="$emit('play-pictogram', pictogram)"
+        @click="handlePictogramClick(pictogram)"
         @pictogram-updated="handlePictogramUpdated"
         @pictogram-deleted="handlePictogramDeleted"
       />
@@ -335,6 +335,11 @@ const handlePictogramDeleted = (deletedPictogramId) => {
       connectionStatus.value = "";
     }, 3000);
   }
+};
+
+const handlePictogramClick = (pictogram) => {
+  emit("play-pictogram", pictogram);
+  emit("add-to-queue", pictogram);
 };
 
 onMounted(() => {

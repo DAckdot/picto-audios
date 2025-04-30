@@ -30,7 +30,7 @@
    <div class="flex overflow-x-auto space-x-4 bg-gray-100 p-2 rounded-lg min-h-[100px]" @dragover.prevent @drop="handleDrop">
       <div 
       v-for="(item, index) in internalQueue" 
-      :key="item.id"
+      :key="item.id || item.COD_PICTOGRAMA || index"
       class="flex-shrink-0 relative group cursor-move"
       draggable="true"
       @dragstart="handleDragStart($event, index)"
@@ -40,11 +40,13 @@
         <div class="w-20 h-20 bg-white rounded-md flex flex-col items-center justify-center border border-gray-300"
              :class="{ 'border-blue-500 border-2': isDraggingOver === index }">
           <img 
-            :src="item.image || defaultImage" 
-            :alt="item.label" 
+            :src="item.image || item.IMAGEN || defaultImage" 
+            :alt="getPictogramText(item)" 
             class="object-contain h-8 w-8"
           />
-          <span class="text-xs text-gray-700 mt-1">{{ item.label }}</span>
+          <span class="text-xs text-gray-700 mt-1 text-center overflow-hidden" style="max-width: 100%; max-height: 40px;">
+            {{ getPictogramText(item) }}
+          </span>
         </div>
         <button 
           @click="removeFromQueue(index)" 
@@ -151,6 +153,11 @@ const handleDrop = () => {
   // Reiniciar variables
   draggedItemIndex.value = null;
   isDraggingOver.value = null;
+};
+
+// Función para obtener el texto del pictograma
+const getPictogramText = (item) => {
+  return item.FRASE || item.label || item.texto || item.NOMBRE || 'Sin texto';
 };
 </script>
 

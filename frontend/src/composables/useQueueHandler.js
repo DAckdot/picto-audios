@@ -52,7 +52,15 @@ export function useQueueHandler(initialQueue = []) {
     }
     try {
       for (const item of queue) {
-        await speak(item.label); // Reproducir el texto del pictograma
+        // Intentar obtener el texto del pictograma de diferentes propiedades posibles
+        const textToSpeak = item.FRASE || item.label || item.texto || '';
+        
+        if (!textToSpeak) {
+          console.warn("Pictograma sin texto:", item);
+          continue; // Saltar este pictograma si no tiene texto
+        }
+        
+        await speak(textToSpeak);
       }
     } catch (error) {
       if (error === "interrupted") {

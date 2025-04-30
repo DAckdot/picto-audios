@@ -26,14 +26,24 @@ export function useSpeech() {
 
   // Select a default voice
   const selectDefaultVoice = () => {
+    // Intentar encontrar una voz en español
     const spanishVoice =
+      voices.value.find((voice) => voice.lang === "es-ES") ||
       voices.value.find((voice) => voice.lang === "es-419") ||
       voices.value.find((voice) => voice.lang.startsWith("es"));
 
-    selectedVoice.value = spanishVoice || voices.value[0] || null;
+    // Si no hay voz en español, intentar con una voz en inglés
+    const fallbackVoice = 
+      voices.value.find((voice) => voice.lang === "en-US") ||
+      voices.value.find((voice) => voice.lang.startsWith("en"));
+
+    // Usar cualquier voz disponible si no hay español o inglés
+    selectedVoice.value = spanishVoice || fallbackVoice || voices.value[0] || null;
 
     if (!selectedVoice.value) {
       console.warn("No voice selected. Ensure your browser supports speech synthesis.");
+    } else {
+      console.log("Selected voice:", selectedVoice.value.name, selectedVoice.value.lang);
     }
   };
 
