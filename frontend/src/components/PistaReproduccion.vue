@@ -40,7 +40,7 @@
         <div class="w-20 h-20 bg-white rounded-md flex flex-col items-center justify-center border border-gray-300"
              :class="{ 'border-blue-500 border-2': isDraggingOver === index }">
           <img 
-            :src="item.image || item.IMAGEN || defaultImage" 
+            :src="getImageSource(item)" 
             :alt="getPictogramText(item)" 
             class="object-contain h-8 w-8"
           />
@@ -158,6 +158,37 @@ const handleDrop = () => {
 // Función para obtener el texto del pictograma
 const getPictogramText = (item) => {
   return item.FRASE || item.label || item.texto || item.NOMBRE || 'Sin texto';
+};
+
+// Función para obtener la fuente de la imagen del pictograma
+const getImageSource = (item) => {
+  // Si viene de la API, la imagen está en PHOTO o FOTO
+  if (item.PHOTO) {
+    if (typeof item.PHOTO === 'string' && item.PHOTO.startsWith('data:')) {
+      return item.PHOTO;
+    }
+    if (typeof item.PHOTO !== 'string' || !item.PHOTO) {
+      return defaultImage;
+    }
+    return `data:image/jpeg;base64,${item.PHOTO}`;
+  }
+  if (item.FOTO) {
+    if (typeof item.FOTO === 'string' && item.FOTO.startsWith('data:')) {
+      return item.FOTO;
+    }
+    if (typeof item.FOTO !== 'string' || !item.FOTO) {
+      return defaultImage;
+    }
+    return `data:image/jpeg;base64,${item.FOTO}`;
+  }
+  // Si viene de datos locales
+  if (item.image) {
+    return item.image;
+  }
+  if (item.IMAGEN) {
+    return item.IMAGEN;
+  }
+  return defaultImage;
 };
 </script>
 
