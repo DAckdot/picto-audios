@@ -1,24 +1,28 @@
 {
   "name": "picto-audios",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^6.7.2",
-    "mespeak": "^2.0.2",
-    "vue": "^3.5.13",
-    "vue-router": "^4.5.1"
+    "@tailwindcss/vite": "^4.1.5",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.1.4",
-    "@vitejs/plugin-vue": "^5.2.2",
-    "autoprefixer": "^10.4.21",
-    "tailwindcss": "^4.1.4",
-    "vite": "^6.3.0"
+    "@eslint/js": "^9.22.0",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.22.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^16.0.0",
+    "vite": "^6.3.1"
   }
 }

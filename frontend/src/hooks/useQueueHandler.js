@@ -1,44 +1,54 @@
-import { reactive } from "vue"
+"use client"
+
+import { useState } from "react"
 
 export function useQueueHandler(initialQueue = []) {
-  // Hacer que la cola sea reactiva
-  const queue = reactive([...initialQueue])
+  // Make the queue reactive
+  const [queue, setQueue] = useState([...initialQueue])
 
-  // Limpiar toda la cola
+  // Clear the entire queue
   const clearQueue = () => {
-    queue.splice(0, queue.length) // Vaciar la cola de manera reactiva
+    setQueue([])
   }
 
-  // Agregar un pictograma a la cola
+  // Add a pictogram to the queue
   const addToQueue = (pictogram) => {
     if (pictogram && !queue.includes(pictogram)) {
-      queue.push(pictogram) // Agregar el pictograma de manera reactiva
+      setQueue((prevQueue) => [...prevQueue, pictogram])
     }
   }
 
-  // Eliminar un elemento en un índice específico
+  // Remove an element at a specific index
   const removeFromQueue = (index) => {
     if (index >= 0 && index < queue.length) {
-      queue.splice(index, 1) // Eliminar el elemento de manera reactiva
+      setQueue((prevQueue) => {
+        const newQueue = [...prevQueue]
+        newQueue.splice(index, 1)
+        return newQueue
+      })
     }
   }
 
-  // Eliminar el último elemento de la cola
+  // Remove the last element from the queue
   const removeLastPictogram = () => {
     if (queue.length > 0) {
-      queue.pop() // Eliminar el último elemento de manera reactiva
+      setQueue((prevQueue) => prevQueue.slice(0, -1))
     }
   }
 
-  // Mover un pictograma de una posición a otra
+  // Move a pictogram from one position to another
   const movePictogram = (fromIndex, toIndex) => {
     if (fromIndex >= 0 && fromIndex < queue.length && toIndex >= 0 && toIndex < queue.length && fromIndex !== toIndex) {
-      const [movedItem] = queue.splice(fromIndex, 1) // Eliminar el elemento de la posición original
-      queue.splice(toIndex, 0, movedItem) // Insertar el elemento en la nueva posición
+      setQueue((prevQueue) => {
+        const newQueue = [...prevQueue]
+        const [movedItem] = newQueue.splice(fromIndex, 1)
+        newQueue.splice(toIndex, 0, movedItem)
+        return newQueue
+      })
     }
   }
 
-  // Reproducir la cola
+  // Play the queue
   const playQueue = async (speak) => {
     if (typeof speak !== "function") {
       console.error("speak is not a function")
@@ -46,12 +56,12 @@ export function useQueueHandler(initialQueue = []) {
     }
     try {
       for (const item of queue) {
-        // Intentar obtener el texto del pictograma de diferentes propiedades posibles
+        // Try to get the text of the pictogram from different possible properties
         const textToSpeak = item.FRASE || item.label || item.texto || ""
 
         if (!textToSpeak) {
-          console.warn("Pictograma sin texto:", item)
-          continue // Saltar este pictograma si no tiene texto
+          console.warn("Pictogram without text:", item)
+          continue // Skip this pictogram if it has no text
         }
 
         await speak(textToSpeak)
@@ -65,7 +75,7 @@ export function useQueueHandler(initialQueue = []) {
     }
   }
 
-  // Detener la reproducción
+  // Stop playback
   const stopQueue = (stop) => {
     if (typeof stop !== "function") {
       console.error("stop is not a function")
@@ -75,7 +85,7 @@ export function useQueueHandler(initialQueue = []) {
   }
 
   return {
-    queue, // Retornar la cola reactiva
+    queue,
     addToQueue,
     clearQueue,
     removeFromQueue,
