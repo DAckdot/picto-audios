@@ -140,56 +140,49 @@ function PictogramGrid({ folderId, onPlayPictogram, onAddToQueue }) {
       reader.readAsDataURL(file)
     })
   }
-
-  const uploadPictogram = async () => {
-    if (!selectedFile || !newPictogramLabel.trim()) {
-      alert("Please select an image and provide a label.")
-      return
-    }
-
-    try {
-      setErrorMessage("")
-      setIsLoading(true)
-      console.log("Uploading pictogram to folder ID:", folderId)
-      const compressedImage = await compressImageToBase64(selectedFile)
-
-      // Check compressed image size
-      console.log(`Compressed image size: ${compressedImage.length} characters`)
-
-      if (compressedImage.length > 500000) {
-        // Reduced to 500KB
-        setErrorMessage("The image is too large. Try with a smaller image.")
-        alert("The image is too large even after compression. Please select a smaller image or one with less detail.")
-        setIsLoading(false)
-        return
-      }
-
-      const result = await createPictogram(folderId, newPictogramLabel, compressedImage)
-      console.log("Upload result:", result)
-
-      if (result.message && result.message.includes("Error")) {
-        setErrorMessage(result.message)
-        alert(`Error: ${result.message}`)
-      } else if (result.error) {
-        setErrorMessage(`Error: ${result.error}`)
-        alert(`Server error: ${result.error}`)
-      } else {
-        await loadPictograms()
-        closeModal()
-        // Show success message
-        setConnectionStatus("Pictogram created successfully")
-        setTimeout(() => {
-          setConnectionStatus("")
-        }, 3000)
-      }
-    } catch (error) {
-      console.error("Error uploading pictogram:", error)
-      setErrorMessage(`Error uploading pictogram: ${error.message}`)
-      alert("An error occurred while uploading the pictogram. Please try again.")
-    } finally {
-      setIsLoading(false)
-    }
+const uploadPictogram = async () => {
+  if (!selectedFile || !newPictogramLabel.trim()) {
+    alert("Please select an image and provide a label.");
+    return;
   }
+
+  try {
+    setErrorMessage("");
+    setIsLoading(true);
+    console.log("Uploading pictogram to folder ID:", folderId);
+
+    // Crear un FormData para enviar la imagen como archivo
+    const formData = new FormData();
+    formData.append('image', selectedFile);
+    formData.append('COD_CARPETA', folderId);
+    formData.append('FRASE', newPictogramLabel);
+
+    const result = await createPictogram(folderId, newPictogramLabel, formData);
+    console.log("Upload result:", result);
+
+    if (result.message && result.message.includes("Error")) {
+      setErrorMessage(result.message);
+      alert(`Error: ${result.message}`);
+    } else if (result.error) {
+      setErrorMessage(`Error: ${result.error}`);
+      alert(`Server error: ${result.error}`);
+    } else {
+      await loadPictograms();
+      closeModal();
+      // Show success message
+      setConnectionStatus("Pictogram created successfully");
+      setTimeout(() => {
+        setConnectionStatus("");
+      }, 3000);
+    }
+  } catch (error) {
+    console.error("Error uploading pictogram:", error);
+    setErrorMessage(`Error uploading pictogram: ${error.message}`);
+    alert("An error occurred while uploading the pictogram. Please try again.");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   // Handlers for pictogram updates and deletions
   const handlePictogramUpdated = (updatedPictogram) => {
