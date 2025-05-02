@@ -219,22 +219,58 @@ export async function fetchFoldersByUser(userId) {
 
 export async function fetchPictogramsByFolder(folderId) {
   try {
-    const response = await fetchWithRetriesAndErrorHandling(`${API_BASE_URL}/pictogramas?carpeta_id=${folderId}`)
-    return response || []
+    // Usamos una solicitud directa para obtener todos los pictogramas
+    const response = await fetchWithRetriesAndErrorHandling(`${API_BASE_URL}/pictogramas`)
+
+    // Si no hay pictogramas, devolvemos array vacío
+    if (!response || !Array.isArray(response) || response.length === 0) {
+      console.log("No hay pictogramas disponibles")
+      return []
+    }
+
+    // Filtramos los pictogramas que pertenecen a la carpeta solicitada
+    const pictogramsInFolder = response.filter(pictogram => 
+      pictogram.COD_CARPETA == folderId
+    )
+
+    if (pictogramsInFolder.length === 0) {
+      console.log(`No hay pictogramas en la carpeta ID: ${folderId}`)
+      return []
+    }
+
+    // Cargamos los datos completos para cada pictograma en una sola operación
+    console.log(`Cargando ${pictogramsInFolder.length} pictogramas completos para carpeta ${folderId}`)
+    
+    const completePictograms = await Promise.all(
+      pictogramsInFolder.map(async (pictogram) => {
+        try {
+          // Obtenemos directamente la información completa
+          const fullPictogram = await fetchWithRetriesAndErrorHandling(
+            `${API_BASE_URL}/pictogramas/${pictogram.COD_PICTOGRAMA}`
+          )
+          
+          // Si obtuvimos respuesta válida, la usamos
+          if (fullPictogram) {
+            return {
+              ...pictogram,
+              PHOTO: fullPictogram.PHOTO || null,
+              FOTO: fullPictogram.PHOTO || null // Para compatibilidad
+            }
+          }
+          return pictogram
+        } catch (error) {
+          console.warn(`No se pudo cargar datos completos para pictograma ${pictogram.COD_PICTOGRAMA}`)
+          return pictogram
+        }
+      })
+    )
+    
+    console.log(`Pictogramas completos cargados para carpeta ${folderId}`)
+    return completePictograms
+    
   } catch (error) {
-    // Check if it's the specific message "No pictograms found"
-    if (error.message && error.message.includes("No se encontraron pictogramas")) {
-      console.log("No pictograms in this folder, returning empty array")
-      return []
-    }
-
-    // If the status is 404, also return an empty array
-    if (error.message && error.message.includes("Status: 404")) {
-      console.log("Folder without pictograms (404), returning empty array")
-      return []
-    }
-
-    throw error
+    console.error("Error al cargar pictogramas:", error)
+    return []
   }
 }
 
@@ -286,7 +322,7 @@ export async function createPictogram(folderId, phrase, photo) {
   const data = {
     COD_CARPETA: folderId,
     FRASE: phrase,
-    PHOTO: photo, // We also send PHOTO for backend compatibility
+    PHOTO: photo, // Mantenemos "PHOTO" para compatibilidad con el backend
   }
 
   console.log("Creating pictogram with data:", {

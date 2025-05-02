@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import PlaybackControls from "./PlaybackControls"
 import { useQueueHandler } from "../hooks/useQueueHandler"
 import { useSpeech } from "../hooks/useSpeech"
 import fallbackImage from "../assets/default.png"
+// Eliminamos las importaciones de Atlaskit que causaban problemas
 
 function PistaReproduccion({ queue = [], onUpdateQueue, onWrappedAddToQueue }) {
   const defaultImage = fallbackImage
@@ -21,10 +22,13 @@ function PistaReproduccion({ queue = [], onUpdateQueue, onWrappedAddToQueue }) {
     setQueueItems
   } = useQueueHandler([])
 
-  // Variables for drag and drop
-  const [draggedItemIndex, setDraggedItemIndex] = useState(null)
-  const [isDraggingOver, setIsDraggingOver] = useState(null)
+  // Estado para drag and drop nativo
+  const queueContainerRef = useRef(null)
+  const [draggedItem, setDraggedItem] = useState(null)
+  const [draggedOverIndex, setDraggedOverIndex] = useState(null)
   const [isPlaying, setIsPlaying] = useState(false)
+  // Cadena dinámica para síntesis de voz basada en la cola actual
+  const [speechText, setSpeechText] = useState("")
 
   // Sincronización de cola externa a cola interna (solo cuando cambie la cola externa)
   useEffect(() => {
@@ -39,6 +43,16 @@ function PistaReproduccion({ queue = [], onUpdateQueue, onWrappedAddToQueue }) {
       setQueueItems(queue);
     }
   }, [queue, setQueueItems]); // Solo depende de la cola externa y la función para actualizar
+
+  // Actualizar el texto para síntesis de voz cuando cambia la cola
+  useEffect(() => {
+    // Construir frase completa basada en los elementos de la cola
+    const text = internalQueue.map(item => 
+      item.FRASE || item.label || item.texto || item.NOMBRE || ""
+    ).filter(text => text).join(" ");
+    
+    setSpeechText(text);
+  }, [internalQueue]);
 
   // Notificar cambios en cola interna SOLO cuando proceden de acciones internas
   // y no de la sincronización desde la cola externa
@@ -93,45 +107,45 @@ function PistaReproduccion({ queue = [], onUpdateQueue, onWrappedAddToQueue }) {
     }
   }, [wrappedAddToQueue, onWrappedAddToQueue]);
 
-  // Functions to handle drag and drop
-  const handleDragStart = (event, index) => {
-    setDraggedItemIndex(index)
-    // Set the data being dragged
-    event.dataTransfer.effectAllowed = "move"
-    // Hide the drag ghost image
-    const dragImage = new Image()
-    dragImage.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" // 1x1 transparent image
-    event.dataTransfer.setDragImage(dragImage, 0, 0)
-  }
+  // Manejar eventos de drag and drop nativo
+  const handleDragStart = (index) => {
+    setDraggedItem(index);
+  };
 
-  const handleDragEnter = (event, index) => {
-    if (index !== draggedItemIndex) {
-      setIsDraggingOver(index)
+  const handleDragEnter = (index) => {
+    setDraggedOverIndex(index);
+  };
+
+  const handleDragEnd = () => {
+    if (draggedItem !== null && draggedOverIndex !== null && draggedItem !== draggedOverIndex) {
+      wrappedMovePictogram(draggedItem, draggedOverIndex);
     }
-  }
+    setDraggedItem(null);
+    setDraggedOverIndex(null);
+  };
 
-  const handleDrop = () => {
-    if (draggedItemIndex !== null && isDraggingOver !== null && draggedItemIndex !== isDraggingOver) {
-      // Move the element
-      wrappedMovePictogram(draggedItemIndex, isDraggingOver)
-    }
-
-    // Reset variables
-    setDraggedItemIndex(null)
-    setIsDraggingOver(null)
-  }
-  
   // Manejar reproducción
   const handlePlay = useCallback(() => {
     setIsPlaying(true);
-    playQueue(speak)
-      .finally(() => {
-        setIsPlaying(false);
-      });
-  }, [playQueue, speak]);
+
+    // Usar la cadena completa en lugar de reproducir cada elemento individualmente
+    if (speechText) {
+      speak(speechText)
+        .finally(() => {
+          setIsPlaying(false);
+        });
+    } else {
+      // Si no hay texto para sintetizar, usamos el método anterior como respaldo
+      playQueue(speak)
+        .finally(() => {
+          setIsPlaying(false);
+        });
+    }
+  }, [playQueue, speak, speechText]);
 
   const handleStop = useCallback(() => {
-    stopQueue(stop);
+    stop(); // Llamar directamente a stop para detener la síntesis de voz
+    stopQueue(stop); // Mantener la llamada a stopQueue para compatibilidad
     setIsPlaying(false);
   }, [stopQueue, stop]);
 
@@ -142,33 +156,40 @@ function PistaReproduccion({ queue = [], onUpdateQueue, onWrappedAddToQueue }) {
 
   // Function to get the pictogram image source
   const getImageSource = useCallback((item) => {
-    // If it comes from the API, the image is in PHOTO or FOTO
+    // Si no hay elemento, devolver imagen por defecto
+    if (!item) return defaultImage;
+    
+    // Buscar primero en PHOTO (campo principal)
     if (item.PHOTO) {
+      // Si ya es una URL de datos completa, usarla directamente
       if (typeof item.PHOTO === "string" && item.PHOTO.startsWith("data:")) {
-        return item.PHOTO
+        return item.PHOTO;
       }
-      if (typeof item.PHOTO !== "string" || !item.PHOTO) {
-        return defaultImage
+      // Si es una cadena base64, construir la URL
+      if (typeof item.PHOTO === "string" && item.PHOTO.length > 0) {
+        return `data:image/jpeg;base64,${item.PHOTO}`;
       }
-      return `data:image/jpeg;base64,${item.PHOTO}`
     }
-    if (item.FOTO) {
+    
+    // Verificar FOTO (para compatibilidad)
+    if (item.FOTO && item.FOTO !== null) {
+      // Si ya es una URL de datos completa, usarla directamente
       if (typeof item.FOTO === "string" && item.FOTO.startsWith("data:")) {
-        return item.FOTO
+        return item.FOTO;
       }
-      if (typeof item.FOTO !== "string" || !item.FOTO) {
-        return defaultImage
+      // Si es una cadena base64, construir la URL
+      if (typeof item.FOTO === "string" && item.FOTO.length > 0) {
+        return `data:image/jpeg;base64,${item.FOTO}`;
       }
-      return `data:image/jpeg;base64,${item.FOTO}`
     }
-    // If it comes from local data
+    
+    // Para pictogramas del sistema o locales
     if (item.image) {
-      return item.image
+      return item.image;
     }
-    if (item.IMAGEN) {
-      return item.IMAGEN
-    }
-    return defaultImage
+    
+    // Si no hay imagen disponible, usar imagen predeterminada
+    return defaultImage;
   }, [defaultImage]);
 
   return (
@@ -203,11 +224,17 @@ function PistaReproduccion({ queue = [], onUpdateQueue, onWrappedAddToQueue }) {
         </div>
       </div>
 
-      {/* Pictogram Queue */}
+      {/* Texto de la frase completa */}
+      {speechText && (
+        <div className="bg-white p-2 rounded-md shadow">
+          <p className="text-gray-800 text-sm font-medium">{speechText}</p>
+        </div>
+      )}
+
+      {/* Pictogram Queue with native drag-and-drop */}
       <div
-        className="flex overflow-x-auto space-x-4 bg-gray-100 p-2 rounded-lg min-h-[100px]"
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={handleDrop}
+        ref={queueContainerRef}
+        className="flex overflow-x-auto space-x-4 bg-gray-100 p-2 rounded-lg min-h-[100px] drag-container"
       >
         {internalQueue.length === 0 ? (
           <div className="flex items-center justify-center w-full text-gray-400 italic">
@@ -217,17 +244,15 @@ function PistaReproduccion({ queue = [], onUpdateQueue, onWrappedAddToQueue }) {
           internalQueue.map((item, index) => (
             <div
               key={item.id || item.COD_PICTOGRAMA || index}
-              className="flex-shrink-0 relative group cursor-move"
-              draggable="true"
-              onDragStart={(e) => handleDragStart(e, index)}
-              onDragOver={(e) => e.preventDefault()}
-              onDragEnter={(e) => handleDragEnter(e, index)}
+              draggable
+              onDragStart={() => handleDragStart(index)}
+              onDragEnter={() => handleDragEnter(index)}
+              onDragEnd={handleDragEnd}
+              className={`flex-shrink-0 relative group cursor-move draggable-item
+                ${draggedOverIndex === index ? 'drop-target' : ''}
+              `}
             >
-              <div
-                className={`w-20 h-20 bg-white rounded-md flex flex-col items-center justify-center border border-gray-300 ${
-                  isDraggingOver === index ? "border-blue-500 border-2" : ""
-                }`}
-              >
+              <div className="w-20 h-20 bg-white rounded-md flex flex-col items-center justify-center border border-gray-300">
                 <img
                   src={getImageSource(item) || "/placeholder.svg"}
                   alt={getPictogramText(item)}
@@ -271,7 +296,6 @@ function PistaReproduccion({ queue = [], onUpdateQueue, onWrappedAddToQueue }) {
           disabled={internalQueue.length === 0}
         />
       </div>
-
     </header>
   )
 }

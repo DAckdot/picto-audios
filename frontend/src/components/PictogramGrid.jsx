@@ -142,11 +142,14 @@ const uploadPictogram = async () => {
     // Comprimir la imagen antes de enviarla
     const compressedImage = await compressImageToBase64(selectedFile);
     
-    // Enviar la imagen comprimida directamente
+    // Extraer solo los datos Base64 sin los metadatos
+    const base64Data = compressedImage.split(',')[1];
+    
+    // Enviar la imagen comprimida con ambos nombres de campo para asegurar compatibilidad
     const result = await createPictogram(
       folderId, 
       newPictogramLabel, 
-      compressedImage.split(',')[1] // Elimina la parte de metadatos (data:image/jpeg;base64,)
+      base64Data
     );
     
     console.log("Resultado de subida:", result);

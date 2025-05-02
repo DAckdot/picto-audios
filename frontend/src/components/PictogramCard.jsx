@@ -29,46 +29,42 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
   }
 
   const getImageSource = (pictogram) => {
-    // If there's an error loading the image or it doesn't have a valid image, use the default image
+    // Si hay un error al cargar la imagen, usar imagen predeterminada
     if (hasError) {
-      return defaultImage
+      return defaultImage;
     }
 
-    // If it comes from the API, the image is in pictogram.PHOTO or pictogram.FOTO
+    // Buscar primero en PHOTO (campo principal)
     if (pictogram.PHOTO) {
-      // Check if it's already a complete data URL
+      // Si ya es una URL de datos completa, usarla directamente
       if (typeof pictogram.PHOTO === "string" && pictogram.PHOTO.startsWith("data:")) {
-        return pictogram.PHOTO
+        return pictogram.PHOTO;
       }
-      // If it's not a string or is empty, use the default image
-      if (typeof pictogram.PHOTO !== "string" || !pictogram.PHOTO) {
-        return defaultImage
+      // Si es una cadena base64, construir la URL
+      if (typeof pictogram.PHOTO === "string" && pictogram.PHOTO.length > 0) {
+        return `data:image/jpeg;base64,${pictogram.PHOTO}`;
       }
-      // Otherwise, we assume it's a base64 string and build the URL
-      return `data:image/jpeg;base64,${pictogram.PHOTO}`
     }
 
-    // Also check the correct FOTO field if it exists
-    if (pictogram.FOTO) {
-      // Check if it's already a complete data URL
+    // Si no hay PHOTO, verificar FOTO (para compatibilidad)
+    if (pictogram.FOTO && pictogram.FOTO !== null) {
+      // Si ya es una URL de datos completa, usarla directamente
       if (typeof pictogram.FOTO === "string" && pictogram.FOTO.startsWith("data:")) {
-        return pictogram.FOTO
+        return pictogram.FOTO;
       }
-      // If it's not a string or is empty, use the default image
-      if (typeof pictogram.FOTO !== "string" || !pictogram.FOTO) {
-        return defaultImage
+      // Si es una cadena base64, construir la URL
+      if (typeof pictogram.FOTO === "string" && pictogram.FOTO.length > 0) {
+        return `data:image/jpeg;base64,${pictogram.FOTO}`;
       }
-      // Otherwise, we assume it's a base64 string and build the URL
-      return `data:image/jpeg;base64,${pictogram.FOTO}`
     }
-
-    // If it comes from local data, the image is in pictogram.image
+    
+    // Para pictogramas del sistema o locales
     if (pictogram.image) {
-      return pictogram.image
+      return pictogram.image;
     }
 
-    // If it doesn't have any, use the default image
-    return defaultImage
+    // Si no hay imagen disponible, usar imagen predeterminada
+    return defaultImage;
   }
 
   // METHODS FOR DELETION

@@ -1,10 +1,23 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 
 export function useQueueHandler(initialQueue = []) {
-  // Make the queue reactive
-  const [queue, setQueue] = useState([...initialQueue])
+  // Load initial queue from localStorage if available
+  const [queue, setQueue] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedQueue = localStorage.getItem('pictogramQueue');
+      return savedQueue ? JSON.parse(savedQueue) : [...initialQueue];
+    }
+    return [...initialQueue];
+  })
+
+  // Save queue to localStorage whenever it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('pictogramQueue', JSON.stringify(queue));
+    }
+  }, [queue]);
 
   // Ensure clearQueue is not called unnecessarily
   const clearQueue = useCallback(() => {
