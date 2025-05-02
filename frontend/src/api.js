@@ -283,35 +283,39 @@ export async function deleteFolder(folderId) {
   })
 }
 
-export async function createPictogram(folderId, phrase, photo) {
-  const data = {
-    COD_CARPETA: folderId,
-    FRASE: phrase,
-    PHOTO: photo, // We also send PHOTO for backend compatibility
+export async function createPictogram(folderId, phrase, photoData) {
+  let data;
+
+  if (photoData instanceof FormData) {
+    // Handle FormData for web uploads
+    const imagePath = photoData.get('imagePath');
+    console.log("Creating pictogram with data:", {
+      COD_CARPETA: folderId,
+      FRASE: phrase,
+      PHOTO: imagePath
+    });
+
+    data = {
+      COD_CARPETA: folderId,
+      FRASE: phrase,
+      PHOTO: imagePath
+    };
+  } else {
+    console.error("Invalid photoData format. Expected FormData.");
+    throw new Error("Invalid photoData format.");
   }
 
-  console.log("Creating pictogram with data:", {
-    COD_CARPETA: folderId,
-    FRASE: phrase,
-    PHOTO: photo ? `Base64 image (length: ${photo.length})` : "No image",
-  })
-
   try {
-    // First check if the image is too large
-    if (photo && photo.length > 1000000) {
-      console.warn("The image is very large, it may cause problems with the database")
-    }
-
     const result = await fetchWithRetriesAndErrorHandling(`${API_BASE_URL}/pictogramas`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
-    })
+    });
 
-    return result
+    return result;
   } catch (error) {
-    console.error("Error creating pictogram:", error)
-    throw error
+    console.error("Error creating pictogram:", error);
+    throw error;
   }
 }
 
@@ -377,8 +381,8 @@ export async function updatePictogram(pictogramId, updateData) {
     return { success: false, message: "Pictogram ID required" }
   }
 
-  // Validate that there is data to update and ensure FRASE is always included
-  if (!updateData.FRASE && !updateData.PHOTO) {
+  // Check if there's any data to update
+  if (!updateData.FRASE && !updateData.PHOTO && !updateData.imagePath && !updateData.RUTA_IMAGEN) {
     console.error("No data provided for update")
     return { success: false, message: "At least phrase or image required for update" }
   }
@@ -392,15 +396,30 @@ export async function updatePictogram(pictogramId, updateData) {
       data.FRASE = updateData.FRASE
     }
 
-    // Give preference to PHOTO for compatibility
-    if (updateData.PHOTO) {
+    // Handle local image paths from Electron
+    if (updateData.isLocalPath) {
+      data.RUTA_IMAGEN = updateData.imagePath || updateData.RUTA_IMAGEN
+      data.isLocalPath = true
+      
+      console.log("Updating pictogram with local image path:", {
+        FRASE: data.FRASE,
+        RUTA_IMAGEN: data.RUTA_IMAGEN
+      });
+    } 
+    // Otherwise use the base64 image data
+    else if (updateData.PHOTO) {
       data.PHOTO = updateData.PHOTO
+      
+      console.log("Updating pictogram with base64 image data:", {
+        FRASE: data.FRASE,
+        "Image size": `${data.PHOTO.length} characters`
+      });
     }
-
-    console.log("Sending request to update pictogram with data:", {
-      FRASE: data.FRASE,
-      "Image size": data.PHOTO ? `${data.PHOTO.length} characters` : "No changes",
-    })
+    else {
+      console.log("Updating pictogram text only:", {
+        FRASE: data.FRASE
+      });
+    }
 
     const result = await fetchWithRetriesAndErrorHandling(`${API_BASE_URL}/pictogramas/${pictogramId}`, {
       method: "PUT",

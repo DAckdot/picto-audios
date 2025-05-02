@@ -1,13 +1,46 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import defaultImage from "../assets/picto_ex.png"
 import { deletePictogram as apiDeletePictogram, updatePictogram } from "../api"
+import imageService from "../services/imageService"
 
 function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDeleted }) {
-  const [hasError, setHasError] = useState(false)
-  const [status, setStatus] = useState("")
-  const [statusClass, setStatusClass] = useState("")
+  const [hasError, setHasError] = useState(false);
+  const [status, setStatus] = useState("");
+  const [statusClass, setStatusClass] = useState("");
+  const [localImageUrl, setLocalImageUrl] = useState(null);
+  const [isElectronEnabled, setIsElectronEnabled] = useState(false);
+
+  useEffect(() => {
+    setIsElectronEnabled(window.electron !== undefined);
+  }, []);
+
+  const loadLocalImage = useCallback(async () => {
+    if (!isElectronEnabled || !pictogram || (!pictogram.imagePath && !pictogram.RUTA_IMAGEN)) {
+      return;
+    }
+
+    try {
+      const imagePath = pictogram.imagePath || pictogram.RUTA_IMAGEN;
+      const result = await imageService.loadImage(imagePath);
+
+      if (result.success) {
+        setLocalImageUrl(result.base64Image);
+        setHasError(false);
+      } else {
+        console.error("Error loading local image:", result.error);
+        setHasError(true);
+      }
+    } catch (error) {
+      console.error("Failed to load local image:", error);
+      setHasError(true);
+    }
+  }, [isElectronEnabled, pictogram]);
+
+  useEffect(() => {
+    loadLocalImage();
+  }, [loadLocalImage]);
 
   // Variables for deletion
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -29,6 +62,11 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
   }
 
   const getImageSource = (pictogram) => {
+    // First check for local image loaded via Electron
+    if (localImageUrl) {
+      return localImageUrl;
+    }
+
     // If there's an error loading the image or it doesn't have a valid image, use the default image
     if (hasError) {
       return defaultImage
@@ -92,6 +130,19 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
 
     try {
       setIsDeleting(true)
+      
+      // If using Electron and we have a local image path, delete the local file first
+      if (isElectronEnabled && (pictogram.imagePath || pictogram.RUTA_IMAGEN)) {
+        try {
+          const imagePath = pictogram.imagePath || pictogram.RUTA_IMAGEN;
+          await imageService.deleteImage(imagePath);
+          console.log("Local image deleted:", imagePath);
+        } catch (err) {
+          console.warn("Error deleting local image:", err);
+          // Continue with deletion even if local file deletion fails
+        }
+      }
+      
       const result = await apiDeletePictogram(pictogram.COD_PICTOGRAMA)
 
       if (result && result.message && result.message.includes("eliminado")) {
@@ -151,8 +202,41 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
     }
   }
 
+  // Open the Electron file selector if available
+  const handleElectronFilePicker = async (e) => {
+    e.preventDefault();
+    
+    try {
+      if (!isElectronEnabled) {
+        // Fall back to regular file input if Electron is not available
+        document.getElementById('edit-file-input').click();
+        return;
+      }
+      
+      const result = await imageService.selectImage();
+      if (result.success) {
+        setEditingImage({
+          name: result.fileName,
+          type: 'image/jpeg', // Assume JPEG for simplicity
+          electronFile: true,
+          base64Data: result.base64Image
+        });
+        setEditingPreviewImage(result.base64Image);
+      }
+    } catch (error) {
+      console.error("Error selecting file with Electron:", error);
+      // Fall back to regular file input
+      document.getElementById('edit-file-input').click();
+    }
+  };
+
   // Function to compress image before uploading
   const compressImageToBase64 = (file) => {
+    // For Electron files, we already have the base64 in the file object
+    if (file.electronFile) {
+      return Promise.resolve(file.base64Data);
+    }
+    
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
       reader.onload = (event) => {
@@ -211,8 +295,39 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
 
       // If a new image was selected
       if (editingImage) {
-        const compressedImage = await compressImageToBase64(editingImage)
-        updateData.PHOTO = compressedImage
+        // Handle image through Electron if available
+        if (isElectronEnabled) {
+          const base64Data = editingImage.electronFile 
+            ? editingImage.base64Data
+            : await compressImageToBase64(editingImage);
+            
+          // Save the image locally and get the path
+          const saveResult = await imageService.saveImage(
+            base64Data,
+            updateData.FRASE,
+            `folder_${pictogram.COD_CARPETA || 'default'}`
+          );
+          
+          if (!saveResult.success) {
+            throw new Error(`Failed to save image locally: ${saveResult.error}`);
+          }
+          
+          updateData.imagePath = saveResult.filePath;
+          updateData.RUTA_IMAGEN = saveResult.filePath;
+          updateData.isLocalPath = true;
+          
+          // Delete old image if it exists
+          if (pictogram.imagePath || pictogram.RUTA_IMAGEN) {
+            try {
+              await imageService.deleteImage(pictogram.imagePath || pictogram.RUTA_IMAGEN);
+            } catch (err) {
+              console.warn("Error deleting old image:", err);
+            }
+          }
+        } else {
+          // For web mode, use base64
+          updateData.PHOTO = await compressImageToBase64(editingImage);
+        }
       }
 
       // Check if there's data to update
@@ -228,6 +343,7 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
         id: pictogram.COD_PICTOGRAMA,
         FRASE: updateData.FRASE,
         hasImage: editingImage ? "Yes" : "No",
+        isLocalPath: updateData.isLocalPath ? "Yes" : "No"
       })
 
       // Perform the update
@@ -242,7 +358,20 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
         const updatedPictogram = {
           ...pictogram,
           FRASE: updateData.FRASE,
-          PHOTO: updateData.PHOTO || pictogram.PHOTO || null,
+        }
+        
+        // Update image-related fields based on storage method
+        if (updateData.isLocalPath) {
+          // For Electron, update path fields
+          updatedPictogram.imagePath = updateData.imagePath;
+          updatedPictogram.RUTA_IMAGEN = updateData.RUTA_IMAGEN;
+          // Update local display immediately
+          if (editingImage && editingImage.base64Data) {
+            setLocalImageUrl(editingImage.base64Data);
+          }
+        } else if (updateData.PHOTO) {
+          // For web, update base64 data
+          updatedPictogram.PHOTO = updateData.PHOTO;
         }
 
         onPictogramUpdated(updatedPictogram)
@@ -325,6 +454,13 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
             </svg>
           </button>
         </div>
+        
+        {/* Local storage indicator */}
+        {isElectronEnabled && (pictogram.imagePath || pictogram.RUTA_IMAGEN) && (
+          <span className="absolute top-1 left-1 bg-green-100 text-green-800 text-[8px] px-1 rounded">
+            Local
+          </span>
+        )}
       </div>
 
       {/* Status indicator for operations */}
@@ -386,16 +522,33 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
 
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">Image:</label>
-              <div className="flex items-center">
+              <div className="flex flex-col items-center">
                 <img
                   src={editingPreviewImage || getImageSource(pictogram)}
                   alt="Preview"
-                  className="h-20 w-20 object-contain border border-gray-300 rounded mr-3"
+                  className="h-28 w-28 object-contain border border-gray-300 rounded mb-3"
                 />
-                <label className="cursor-pointer px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                  <span>Change image</span>
-                  <input type="file" className="hidden" accept="image/*" onChange={handleEditImageUpload} />
-                </label>
+                <div className="flex items-center">
+                  <input
+                    id="edit-file-input"
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleEditImageUpload}
+                  />
+                  <button 
+                    className="cursor-pointer px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    onClick={handleElectronFilePicker}
+                  >
+                    {isElectronEnabled ? "Select Image" : "Upload Image"}
+                  </button>
+                </div>
+                
+                {isElectronEnabled && (pictogram.imagePath || pictogram.RUTA_IMAGEN) && (
+                  <p className="text-xs text-green-600 mt-2">
+                    Current image is stored locally
+                  </p>
+                )}
               </div>
             </div>
 
@@ -418,24 +571,6 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
         </div>
       )}
 
-      <style jsx>{`
-        .pictogram-card {
-          border: 1px solid #ccc;
-          padding: 16px;
-          text-align: center;
-          position: relative;
-        }
-
-        /* Add fade-in effect to buttons */
-        .pictogram-card:hover .absolute {
-          opacity: 1;
-        }
-
-        .pictogram-card .absolute {
-          opacity: 0;
-          transition: opacity 0.2s ease-in-out;
-        }
-      `}</style>
     </div>
   )
 }

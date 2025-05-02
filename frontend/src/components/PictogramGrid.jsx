@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import PictogramCard from "./PictogramCard"
 import { fetchPictogramsByFolder, createPictogram, checkConnection } from "../api"
+import imageService from "../services/imageService"
 
 function PictogramGrid({ folderId, onPlayPictogram, onAddToQueue }) {
   // Separate state variables for different types of loading
@@ -17,7 +18,13 @@ function PictogramGrid({ folderId, onPlayPictogram, onAddToQueue }) {
   const [isLoading, setIsLoading] = useState(false)
   // Loading state for fetching pictograms from a folder (controls the spinner in the view)
   const [loadingPictograms, setLoadingPictograms] = useState(false)
-  const [testFolderId, setTestFolderId] = useState(1)
+  const [isElectronEnabled, setIsElectronEnabled] = useState(false)
+
+  // Check if Electron is available
+  useEffect(() => {
+    setIsElectronEnabled(window.electron !== undefined)
+    console.log("Electron mode:", window.electron !== undefined ? "enabled" : "disabled")
+  }, [])
 
   // Function to test connection with the backend
   const testConnection = async () => {
@@ -84,22 +91,52 @@ function PictogramGrid({ folderId, onPlayPictogram, onAddToQueue }) {
     setPreviewImage(null)
   }
 
-  const handleFileUpload = (event) => {
+  const handleFileUpload = async (event) => {
     const file = event.target.files[0]
+    if (!file) return
+    
     setSelectedFile(file)
 
     // Show preview
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        setPreviewImage(e.target.result)
-      }
-      reader.readAsDataURL(file)
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      setPreviewImage(e.target.result)
     }
+    reader.readAsDataURL(file)
   }
+
+  // Open the Electron file selector if available
+  const handleElectronFilePicker = async () => {
+    try {
+      if (!window.electron) {
+        // Fall back to regular file input if Electron is not available
+        document.getElementById('file-input').click();
+        return;
+      }
+      
+      const result = await imageService.selectImage();
+      if (result.success) {
+        setSelectedFile({
+          name: result.fileName,
+          type: 'image/jpeg', // Assume JPEG for simplicity
+          electronFile: true
+        });
+        setPreviewImage(result.base64Image);
+      }
+    } catch (error) {
+      console.error("Error selecting file with Electron:", error);
+      // Fall back to regular file input
+      document.getElementById('file-input').click();
+    }
+  };
 
   // Significantly improve image compression
   const compressImageToBase64 = (file) => {
+    // For Electron files, we already have the base64 in previewImage
+    if (file.electronFile) {
+      return Promise.resolve(previewImage);
+    }
+
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
       reader.onload = (event) => {
@@ -140,49 +177,88 @@ function PictogramGrid({ folderId, onPlayPictogram, onAddToQueue }) {
       reader.readAsDataURL(file)
     })
   }
-const uploadPictogram = async () => {
-  if (!selectedFile || !newPictogramLabel.trim()) {
-    alert("Please select an image and provide a label.");
-    return;
-  }
 
-  try {
-    setErrorMessage("");
-    setIsLoading(true);
-    console.log("Uploading pictogram to folder ID:", folderId);
+  const saveCompressedImage = async (base64Image, folderId, label) => {
+    try {
+      if (window.electron && window.electron.imageAPI) {
+        // Use Electron's IPC to save the image locally
+        const result = await window.electron.imageAPI.saveImage(
+          base64Image,
+          `${label}.png`,
+          `folder_${folderId}`
+        );
 
-    // Crear un FormData para enviar la imagen como archivo
-    const formData = new FormData();
-    formData.append('image', selectedFile);
-    formData.append('COD_CARPETA', folderId);
-    formData.append('FRASE', newPictogramLabel);
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to save image locally');
+        }
 
-    const result = await createPictogram(folderId, newPictogramLabel, formData);
-    console.log("Upload result:", result);
+        return result.filePath;
+      } else {
+        // Fallback to HTTP request for web environment
+        const response = await fetch(`/save-image`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            base64Image,
+            folder: `folder_${folderId}`,
+            label
+          })
+        });
 
-    if (result.message && result.message.includes("Error")) {
-      setErrorMessage(result.message);
-      alert(`Error: ${result.message}`);
-    } else if (result.error) {
-      setErrorMessage(`Error: ${result.error}`);
-      alert(`Server error: ${result.error}`);
-    } else {
-      await loadPictograms();
-      closeModal();
-      // Show success message
-      setConnectionStatus("Pictogram created successfully");
-      setTimeout(() => {
-        setConnectionStatus("");
-      }, 3000);
+        if (!response.ok) {
+          throw new Error(`Failed to save image to public folder: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        return result.filePath;
+      }
+    } catch (error) {
+      console.error("Error saving image:", error);
+      throw error;
     }
-  } catch (error) {
-    console.error("Error uploading pictogram:", error);
-    setErrorMessage(`Error uploading pictogram: ${error.message}`);
-    alert("An error occurred while uploading the pictogram. Please try again.");
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
+
+  const uploadPictogram = async () => {
+    if (!selectedFile || !newPictogramLabel.trim()) {
+      alert("Please select an image and provide a label.");
+      return;
+    }
+
+    try {
+      setErrorMessage("");
+      setIsLoading(true);
+      console.log("Uploading pictogram to folder ID:", folderId);
+
+      const base64Image = await compressImageToBase64(selectedFile);
+      const imagePath = await saveCompressedImage(base64Image, folderId, newPictogramLabel);
+
+      const formData = new FormData();
+      formData.append('imagePath', imagePath);
+      formData.append('COD_CARPETA', folderId);
+      formData.append('FRASE', newPictogramLabel);
+
+      const result = await createPictogram(folderId, newPictogramLabel, formData);
+      console.log("Upload result:", result);
+
+      if (result.message && result.message.includes("Error")) {
+        setErrorMessage(result.message);
+        alert(`Error: ${result.message}`);
+      } else {
+        await loadPictograms();
+        closeModal();
+        setConnectionStatus("Pictogram created successfully");
+        setTimeout(() => {
+          setConnectionStatus("");
+        }, 3000);
+      }
+    } catch (error) {
+      console.error("Error uploading pictogram:", error);
+      setErrorMessage(`Error uploading pictogram: ${error.message}`);
+      alert("An error occurred while uploading the pictogram. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Handlers for pictogram updates and deletions
   const handlePictogramUpdated = (updatedPictogram) => {
@@ -229,6 +305,16 @@ const uploadPictogram = async () => {
     }
   }, [folderId])
 
+  // Agregar manejo de errores para evitar pantalla en blanco
+  if (errorMessage) {
+    return (
+      <div className="p-4 text-center text-red-500">
+        <p>Error: {errorMessage}</p>
+        <button onClick={testConnection} className="mt-2 px-4 py-2 bg-blue-500 text-white rounded">Retry</button>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 h-full overflow-auto custom-scrollbar md:overflow-scroll">
       {/* Error alert */}
@@ -242,6 +328,14 @@ const uploadPictogram = async () => {
           >
             Test connection
           </button>
+        </div>
+      )}
+
+      {/* Electron mode indicator */}
+      {isElectronEnabled && (
+        <div className="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded text-sm">
+          <strong className="font-bold">Local Storage Mode Enabled: </strong>
+          <span className="block sm:inline">Images will be stored locally on your computer</span>
         </div>
       )}
 
@@ -329,12 +423,21 @@ const uploadPictogram = async () => {
 
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">Image:</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileUpload}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-              />
+              <div className="flex items-center">
+                <input
+                  id="file-input"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                <button
+                  onClick={handleElectronFilePicker}
+                  className="w-full px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                >
+                  {isElectronEnabled ? "Select Image File" : "Upload Image"}
+                </button>
+              </div>
               {previewImage && (
                 <div className="mt-2 flex justify-center">
                   <img
@@ -373,27 +476,7 @@ const uploadPictogram = async () => {
             </div>
           </div>
         </div>
-      )}
-
-      <style jsx>{`
-        .custom-scrollbar {
-          scrollbar-width: thin;
-          scrollbar-color: rgba(163, 230, 53, 0.5) #f0f0f0;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 8px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: rgb(163, 230, 53);
-          border-radius: 4px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background-color: #f0f0f0;
-        }
-      `}</style>
+      )}    
     </div>
   )
 }

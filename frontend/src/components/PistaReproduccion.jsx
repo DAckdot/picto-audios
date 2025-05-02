@@ -1,43 +1,33 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import PlaybackControls from "./PlaybackControls"
 import { useQueueHandler } from "../hooks/useQueueHandler"
 import { useSpeech } from "../hooks/useSpeech"
-import fallbackImage from "../assets/react.svg"
+import fallbackImage from "../assets/hola.png"
 
 function PistaReproduccion({ queue, onUpdateQueue }) {
-  const defaultImage = fallbackImage
-  const { speak, stop } = useSpeech()
-  const {
-    queue: internalQueue,
-    clearQueue,
-    removeFromQueue,
-    removeLastPictogram,
-    movePictogram,
-    playQueue,
-    stopQueue,
-    addToQueue,
-  } = useQueueHandler(queue)
-
-  // Variables for drag and drop
-  const [draggedItemIndex, setDraggedItemIndex] = useState(null)
-  const [isDraggingOver, setIsDraggingOver] = useState(null)
-
-  // Synchronize the internal queue when the external prop changes
+  const [internalQueue, setInternalQueue] = useState([]);
+  const [isDraggingOver, setIsDraggingOver] = useState(null);
+  const [draggedItemIndex, setDraggedItemIndex] = useState(null);
+  const defaultImage = "/placeholder.svg";
+  
+  // Load initial queue from props
   useEffect(() => {
-    // Update the internal queue when the external prop changes
-    if (queue.length !== internalQueue.length) {
-      // Only reinitialize if necessary to avoid infinite loops
-      clearQueue()
-      queue.forEach((item) => addToQueue(item))
+    if (JSON.stringify(queue) !== JSON.stringify(internalQueue)) {
+      setInternalQueue(queue);
     }
-  }, [queue, internalQueue.length, clearQueue, addToQueue])
+  }, [queue]);
 
-  // Synchronize the external queue when the internal one changes
+  // Only update the parent when internal queue changes from user actions
+  const notifyParentOfChanges = useCallback(() => {
+    onUpdateQueue([...internalQueue]);
+  }, [onUpdateQueue, internalQueue]);
+
+  // Use a separate effect for notifying parent of changes
   useEffect(() => {
-    onUpdateQueue([...internalQueue])
-  }, [internalQueue, onUpdateQueue])
+    notifyParentOfChanges();
+  }, [notifyParentOfChanges]);
 
   // Functions to handle drag and drop
   const handleDragStart = (event, index) => {
@@ -102,6 +92,38 @@ function PistaReproduccion({ queue, onUpdateQueue }) {
     }
     return defaultImage
   }
+
+  // Queue modification functions
+  const clearQueue = () => {
+    setInternalQueue([]);
+  };
+
+  const removeFromQueue = (index) => {
+    setInternalQueue(prev => {
+      const newQueue = [...prev];
+      newQueue.splice(index, 1);
+      return newQueue;
+    });
+  };
+
+  const removeLastPictogram = () => {
+    if (internalQueue.length > 0) {
+      setInternalQueue(prev => prev.slice(0, -1));
+    }
+  };
+
+  const movePictogram = (fromIndex, toIndex) => {
+    setInternalQueue(prev => {
+      const newQueue = [...prev];
+      const [movedItem] = newQueue.splice(fromIndex, 1);
+      newQueue.splice(toIndex, 0, movedItem);
+      return newQueue;
+    });
+  };
+
+  // Speech functionality
+  const { speak, stop } = useSpeech();
+  const { playQueue, stopQueue } = useQueueHandler(internalQueue);
 
   return (
     <header className="bg-zinc-700 border-b border-lime-400 p-4 flex flex-col space-y-4">
@@ -202,21 +224,6 @@ function PistaReproduccion({ queue, onUpdateQueue }) {
       <div className="flex justify-end space-x-4">
         <PlaybackControls onPlay={() => playQueue(speak)} onStop={() => stopQueue(stop)} />
       </div>
-
-      <style jsx>{`
-        /* Add hover effects for buttons */
-        button:hover {
-          transition: background-color 0.3s ease;
-        }
-
-        .cursor-move {
-          cursor: grab;
-        }
-
-        .cursor-move:active {
-          cursor: grabbing;
-        }
-      `}</style>
     </header>
   )
 }

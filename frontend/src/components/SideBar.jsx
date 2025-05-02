@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import FolderItem from "./FolderItem"
 import { fetchFoldersByUser, createFolder, fetchUsers } from "../api"
 
-function SideBar({ userId, selectedFolder, onSelectFolder, onChangeUser }) {
+function SideBar({ userId, selectedFolder, onSelectFolder, onChangeUser, onShowDefaultPictograms, isElectronEnabled }) {
   const [searchQuery, setSearchQuery] = useState("")
   const [folders, setFolders] = useState([])
   const [loading, setLoading] = useState(true)
@@ -167,6 +167,11 @@ function SideBar({ userId, selectedFolder, onSelectFolder, onChangeUser }) {
     })
   }
 
+  const handleFolderSelection = (folderId) => {
+    console.log("Folder selected in SideBar:", folderId);
+    setTimeout(() => onSelectFolder(folderId), 0); // Defer the state update to avoid React warning
+  };
+
   // Load folders when component mounts or userId changes
   useEffect(() => {
     loadFolders()
@@ -243,6 +248,32 @@ function SideBar({ userId, selectedFolder, onSelectFolder, onChangeUser }) {
 
       {folderStatus && <div className={`p-2 m-2 text-sm rounded ${folderStatusClass}`}>{folderStatus}</div>}
 
+      {/* Default Pictograms Button (only in Electron mode) */}
+      {isElectronEnabled && (
+        <div className="px-4 py-3 border-b border-gray-200">
+          <button
+            onClick={onShowDefaultPictograms}
+            className="w-full px-3 py-2 bg-green-500 text-white rounded-lg flex items-center justify-center hover:bg-green-600 transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-2"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            Default Pictograms
+          </button>
+        </div>
+      )}
+
       {loading ? (
         <div className="p-4 text-center text-gray-500">Loading folders...</div>
       ) : error ? (
@@ -263,7 +294,7 @@ function SideBar({ userId, selectedFolder, onSelectFolder, onChangeUser }) {
                       name: folder.NOMBRE,
                     }}
                     isSelected={selectedFolder == folder.COD_CARPETA}
-                    onSelectFolder={onSelectFolder}
+                    onSelectFolder={handleFolderSelection} // Use the new handler
                     onFolderUpdated={handleFolderUpdated}
                     onFolderDeleted={handleFolderDeleted}
                   />
@@ -295,6 +326,14 @@ function SideBar({ userId, selectedFolder, onSelectFolder, onChangeUser }) {
               {isCreatingFolder ? "Creating..." : "Add Folder"}
             </button>
           </div>
+
+          {/* Electron Mode Indicator */}
+          {isElectronEnabled && (
+            <div className="mt-6 p-3 bg-green-50 text-green-700 text-xs rounded-lg">
+              <span className="font-semibold">Desktop Mode</span>
+              <p className="mt-1">Images are stored locally on your computer</p>
+            </div>
+          )}
         </nav>
       )}
     </aside>
