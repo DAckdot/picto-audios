@@ -1,4 +1,3 @@
-// Keep the original API implementation as is
 const API_BASE_URL = "https://pb-ykap.onrender.com/index.php"
 // Retry parameters for critical operations
 const RETRY_ATTEMPTS = 3
@@ -120,7 +119,7 @@ async function fetchWithRetriesAndErrorHandling(url, options = {}, attempts = RE
 export async function checkConnection() {
   try {
     // Use the retry system for this test too
-    const result = await fetchWithRetriesAndErrorHandling(
+    await fetchWithRetriesAndErrorHandling(
       `${API_BASE_URL}/usuarios`,
       {
         method: "GET",

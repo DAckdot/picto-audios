@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import FolderItem from "./FolderItem"
 import { fetchFoldersByUser, createFolder, fetchUsers } from "../api"
 
@@ -20,11 +20,11 @@ function SideBar({ userId, selectedFolder, onSelectFolder, onChangeUser }) {
     ? folders.filter((folder) => folder.NOMBRE.toLowerCase().includes(searchQuery.toLowerCase()))
     : folders
 
-  const loadFolders = async () => {
+  const loadFolders = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
-      console.log("Loading folders for user ID:", userId)
+      console.log("Cargando carpetas para el usuario ID:", userId)
       const response = await fetchFoldersByUser(userId)
 
       if (response.message) {
@@ -33,39 +33,39 @@ function SideBar({ userId, selectedFolder, onSelectFolder, onChangeUser }) {
         setFolders([])
       } else {
         setFolders(response)
-        console.log("Folders loaded:", response)
+        console.log("Carpetas cargadas:", response)
       }
     } catch (err) {
-      console.error("Error loading folders:", err)
-      setError("Error loading folders")
+      console.error("Error al cargar carpetas:", err)
+      setError("Error al cargar carpetas")
       setFolders([])
     } finally {
       setLoading(false)
     }
-  }
+  }, [userId])
 
   const addFolder = async () => {
-    const folderName = prompt("Enter the name of the new folder:")
+    const folderName = prompt("Ingresa el nombre de la nueva carpeta:")
     if (!folderName) return // If the user cancels or doesn't enter anything
 
     const trimmedName = folderName.trim()
     if (!trimmedName) {
-      alert("Folder name cannot be empty")
+      alert("El nombre de la carpeta no puede estar vacío")
       return
     }
 
     try {
       setIsCreatingFolder(true)
-      setFolderStatus("Creating folder...")
+      setFolderStatus("Creando carpeta...")
       setFolderStatusClass("bg-blue-100 text-blue-700")
 
-      console.log(`Trying to create folder '${trimmedName}' for user ${userId}`)
+      console.log(`Intentando crear carpeta '${trimmedName}' para el usuario ${userId}`)
 
       const result = await createFolder(userId, trimmedName)
-      console.log("Create folder response:", result)
+      console.log("Respuesta de creación de carpeta:", result)
 
       if (result.id) {
-        setFolderStatus("Folder created successfully!")
+        setFolderStatus("¡Carpeta creada con éxito!")
         setFolderStatusClass("bg-green-100 text-green-700")
 
         // Reload folders after creating a new one
@@ -79,12 +79,12 @@ function SideBar({ userId, selectedFolder, onSelectFolder, onChangeUser }) {
           setFolderStatus("")
         }, 3000)
       } else {
-        setFolderStatus(result.message || "Error creating folder")
+        setFolderStatus(result.message || "Error al crear carpeta")
         setFolderStatusClass("bg-red-100 text-red-700")
-        console.error("Error creating folder:", result)
+        console.error("Error al crear carpeta:", result)
       }
     } catch (err) {
-      console.error("Error creating folder:", err)
+      console.error("Error al crear carpeta:", err)
       setFolderStatus(`Error: ${err.message}`)
       setFolderStatusClass("bg-red-100 text-red-700")
     } finally {
@@ -128,7 +128,7 @@ function SideBar({ userId, selectedFolder, onSelectFolder, onChangeUser }) {
   }
 
   const handleFolderDeleted = (deletedFolderId) => {
-    console.log(`Removing folder with ID ${deletedFolderId} from the list`)
+    console.log(`Eliminando carpeta con ID ${deletedFolderId} de la lista`)
 
     // Check if the deleted folder was currently selected
     const wasSelected = selectedFolder == deletedFolderId
@@ -153,7 +153,7 @@ function SideBar({ userId, selectedFolder, onSelectFolder, onChangeUser }) {
         }
 
         // Show confirmation message
-        setFolderStatus("Folder deleted successfully")
+        setFolderStatus("Carpeta eliminada con éxito")
         setFolderStatusClass("bg-green-100 text-green-700")
 
         // Clear message after 3 seconds
@@ -169,18 +169,18 @@ function SideBar({ userId, selectedFolder, onSelectFolder, onChangeUser }) {
 
   // Load folders when component mounts or userId changes
   useEffect(() => {
-    loadFolders()
-  }, [userId])
+    loadFolders();
+  }, [userId, loadFolders]);
 
   return (
-    <aside className="bg-gray-100 w-64 border-r border-gray-200 h-full flex-shrink-0">
+    <aside className="bg-gray-100 w-64 border-r border-gray-200 h-full flex-shrink-0 flex flex-col">
       <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-800">User: {userId}</h2>
+        <h2 className="text-sm font-semibold text-gray-800">Usuario: {userId}</h2>
         <div className="relative">
           <button
             onClick={toggleUserDropdown}
             className="p-2 rounded-md hover:bg-gray-200 transition-colors"
-            title="Change user"
+            title="Cambiar usuario"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -202,9 +202,9 @@ function SideBar({ userId, selectedFolder, onSelectFolder, onChangeUser }) {
           {showUserDropdown && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
               {loadingUsers ? (
-                <div className="p-3 text-sm text-gray-600">Loading users...</div>
+                <div className="p-3 text-sm text-gray-600">Cargando usuarios...</div>
               ) : users.length === 0 ? (
-                <div className="p-3 text-sm text-gray-600">No users available</div>
+                <div className="p-3 text-sm text-gray-600">No hay usuarios disponibles</div>
               ) : (
                 <div className="py-1">
                   {users.map((user) => (
@@ -219,7 +219,7 @@ function SideBar({ userId, selectedFolder, onSelectFolder, onChangeUser }) {
                       }`}
                     >
                       {user.NOMBRE_USU}
-                      {user.COD_USUARIO === userId && <span className="ml-2 text-xs text-green-600">(Current)</span>}
+                      {user.COD_USUARIO === userId && <span className="ml-2 text-xs text-green-600">(Actual)</span>}
                     </button>
                   ))}
                 </div>
@@ -232,7 +232,7 @@ function SideBar({ userId, selectedFolder, onSelectFolder, onChangeUser }) {
       <div className="p-4 border-b border-gray-200">
         <input
           type="text"
-          placeholder="Search folders..."
+          placeholder="Buscar carpetas..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           id="search-folders"
@@ -243,60 +243,73 @@ function SideBar({ userId, selectedFolder, onSelectFolder, onChangeUser }) {
 
       {folderStatus && <div className={`p-2 m-2 text-sm rounded ${folderStatusClass}`}>{folderStatus}</div>}
 
-      {loading ? (
-        <div className="p-4 text-center text-gray-500">Loading folders...</div>
-      ) : error ? (
-        <div className="p-4 text-center text-red-500">{error}</div>
-      ) : (
-        <nav className="p-4 overflow-y-auto h-[calc(100%-4rem)]">
-          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">Folders</h2>
-
-          {filteredFolders.length === 0 ? (
-            <div className="text-center text-gray-500 mb-4">No folders found</div>
-          ) : (
-            <ul className="space-y-2">
-              {filteredFolders.map((folder) => (
-                <li key={folder.COD_CARPETA}>
-                  <FolderItem
-                    folder={{
-                      id: folder.COD_CARPETA,
-                      name: folder.NOMBRE,
-                    }}
-                    isSelected={selectedFolder == folder.COD_CARPETA}
-                    onSelectFolder={onSelectFolder}
-                    onFolderUpdated={handleFolderUpdated}
-                    onFolderDeleted={handleFolderDeleted}
-                  />
-                </li>
-              ))}
-            </ul>
-          )}
-
-          <div className="mt-6">
-            <button
-              onClick={addFolder}
-              className="w-full px-4 py-3 bg-lime-400 text-white rounded-lg flex items-center justify-center hover:bg-lime-500 transition-colors"
-              disabled={isCreatingFolder}
+      <div className="flex flex-col flex-grow">
+        {loading ? (
+          <div className="p-4 text-center text-gray-500">Cargando carpetas...</div>
+        ) : error ? (
+          <div className="p-4 text-center text-red-500">{error}</div>
+        ) : (
+          <div className="flex flex-col h-full">
+            <div className="p-4 pb-2">
+              <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Carpetas</h2>
+            </div>
+            
+            {/* Folders Section */}
+            <div
+              className="px-4 overflow-y-auto flex-grow"
+              style={{
+                maxHeight: "calc(3 * 4rem)", // Limit to 3 folders (each ~4rem tall)
+                minHeight: "12rem", // Ensure a minimum height for responsiveness
+              }}
             >
-              {isCreatingFolder ? (
-                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
+              {filteredFolders.length === 0 ? (
+                <div className="text-center text-gray-500 mb-4">No se encontraron carpetas</div>
               ) : (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 mr-2"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M12 4v16m8-8H4" />
-                </svg>
+                <ul className="space-y-2">
+                  {filteredFolders.map((folder) => (
+                    <li key={folder.COD_CARPETA}>
+                      <FolderItem
+                        folder={{
+                          id: folder.COD_CARPETA,
+                          name: folder.NOMBRE,
+                        }}
+                        isSelected={selectedFolder == folder.COD_CARPETA}
+                        onSelectFolder={onSelectFolder}
+                        onFolderUpdated={handleFolderUpdated}
+                        onFolderDeleted={handleFolderDeleted}
+                      />
+                    </li>
+                  ))}
+                </ul>
               )}
-              {isCreatingFolder ? "Creating..." : "Add Folder"}
-            </button>
+            </div>
+            
+            <div className="p-4 mt-auto">
+              <button
+                onClick={addFolder}
+                className="w-full px-4 py-3 bg-lime-400 text-white rounded-lg flex items-center justify-center hover:bg-lime-500 transition-colors"
+                disabled={isCreatingFolder}
+              >
+                {isCreatingFolder ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6 mr-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M12 4v16m8-8H4" />
+                  </svg>
+                )}
+                {isCreatingFolder ? "Creando..." : "Añadir Carpeta"}
+              </button>
+            </div>
           </div>
-        </nav>
-      )}
+        )}
+      </div>
     </aside>
   )
 }

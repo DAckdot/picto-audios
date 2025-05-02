@@ -1,7 +1,8 @@
 "use client"
 
-function PlaybackControls({ onPlay, onStop }) {
+function PlaybackControls({ onPlay, onStop, isPlaying = false, disabled = false }) {
   const handlePlay = () => {
+    if (disabled || isPlaying) return;
     try {
       onPlay()
     } catch (error) {
@@ -10,6 +11,7 @@ function PlaybackControls({ onPlay, onStop }) {
   }
 
   const handleStop = () => {
+    if (!isPlaying) return;
     try {
       onStop()
     } catch (error) {
@@ -21,7 +23,10 @@ function PlaybackControls({ onPlay, onStop }) {
     <div className="flex items-center space-x-2">
       <button
         onClick={handlePlay}
-        className="px-2 py-1 bg-lime-400 text-white rounded hover:bg-lime-500 flex items-center space-x-1 text-sm"
+        disabled={disabled || isPlaying}
+        className={`px-2 py-1 ${disabled ? 'bg-gray-400' : (isPlaying ? 'bg-lime-600' : 'bg-lime-400 hover:bg-lime-500')} 
+          text-white rounded flex items-center space-x-1 text-sm transition-colors 
+          ${disabled ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -33,11 +38,13 @@ function PlaybackControls({ onPlay, onStop }) {
         >
           <polygon points="5 3 19 12 5 21 5 3" />
         </svg>
-        <span>Play</span>
+        <span>{isPlaying ? "Reproduciendo..." : "Reproducir"}</span>
       </button>
       <button
         onClick={handleStop}
-        className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 flex items-center space-x-1 text-sm"
+        disabled={!isPlaying}
+        className={`px-2 py-1 ${!isPlaying ? 'bg-gray-400 cursor-not-allowed opacity-70' : 'bg-red-500 hover:bg-red-600 cursor-pointer'} 
+          text-white rounded flex items-center space-x-1 text-sm transition-colors`}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -47,10 +54,9 @@ function PlaybackControls({ onPlay, onStop }) {
           stroke="currentColor"
           strokeWidth="2"
         >
-          <line x1="6" y1="6" x2="18" y2="18" />
-          <line x1="6" y1="18" x2="18" y2="6" />
+          <rect x="6" y="6" width="12" height="12" />
         </svg>
-        <span>Stop</span>
+        <span>Detener</span>
       </button>
     </div>
   )

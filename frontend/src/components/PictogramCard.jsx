@@ -267,7 +267,7 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
   }
 
   return (
-    <div className="pictogram-card-container relative">
+    <div className="pictogram-card-container relative" data-jsx="true">
       <div
         className="pictogram-card flex flex-col items-center bg-white rounded-lg border border-lime-500 overflow-hidden hover:shadow-lg transition-shadow duration-200 w-full max-w-[200px] mx-auto aspect-square cursor-pointer"
         onClick={handleClick}
@@ -418,24 +418,6 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
         </div>
       )}
 
-      <style jsx>{`
-        .pictogram-card {
-          border: 1px solid #ccc;
-          padding: 16px;
-          text-align: center;
-          position: relative;
-        }
-
-        /* Add fade-in effect to buttons */
-        .pictogram-card:hover .absolute {
-          opacity: 1;
-        }
-
-        .pictogram-card .absolute {
-          opacity: 0;
-          transition: opacity 0.2s ease-in-out;
-        }
-      `}</style>
     </div>
   )
 }

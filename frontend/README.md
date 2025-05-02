@@ -1,12 +1,59 @@
-# React + Vite
+# Picto Audios - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Descripción
+Sistema de comunicación aumentativa basado en pictogramas con capacidad de síntesis de voz. Esta aplicación permite a los usuarios seleccionar pictogramas para formar frases que luego pueden ser reproducidas como audio, facilitando la comunicación para personas con dificultades del habla.
 
-Currently, two official plugins are available:
+## Tecnologías
+- **React.js** - Biblioteca JavaScript para construir interfaces de usuario
+- **Vite** - Herramienta de compilación y desarrollo
+- **TailwindCSS** - Framework CSS para diseño rápido
+- **Web Speech API** - Para síntesis de voz
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Requisitos previos
+- Node.js (v16.0.0 o superior)
+- npm (v8.0.0 o superior)
 
-## Expanding the ESLint configuration
+## Instalación
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+# Clonar el repositorio
+git clone https://github.com/tu-usuario/picto-audios.git
+
+# Navegar al directorio del frontend
+cd picto-audios/frontend
+
+# Instalar dependencias
+npm install
+```
+
+## Ejecutar en desarrollo
+
+```bash
+npm run dev
+```
+
+La aplicación estará disponible en `http://localhost:5173/`
+
+## Construir para producción
+
+```bash
+npm run build
+```
+
+Los archivos compilados estarán disponibles en el directorio `dist/`
+
+## Características principales
+- Búsqueda de pictogramas
+- Selección y organización de pictogramas en secuencia
+- Reproducción de audio a partir de los pictogramas seleccionados
+- Ajuste de velocidad y tono de la voz
+- Organización de pictogramas por categorías
+
+## Estructura del proyecto
+- `src/components/` - Componentes reutilizables de React
+- `src/hooks/` - Hooks personalizados (useSpeech, useQueueHandler)
+- `src/assets/` - Pictogramas e imágenes
+- `src/data/` - Datos estáticos como la lista de pictogramas
+
+## Licencia
+[Ver archivo LICENSE para detalles](../LICENSE)

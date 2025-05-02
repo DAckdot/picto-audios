@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { SPEECH_CONFIG } from "../config"
 
 export function useSpeech() {
   const [isSpeaking, setIsSpeaking] = useState(false)
@@ -10,6 +11,30 @@ export function useSpeech() {
   // Check if the browser supports speech synthesis
   const synth = window.speechSynthesis
   const isSupported = !!synth
+
+  // Select a default voice
+  const selectDefaultVoice = useCallback((availableVoices) => {
+    // Try to find a voice in the preferred language from config
+    const preferredVoice =
+      availableVoices.find((voice) => voice.lang === SPEECH_CONFIG.PREFERRED_LANGUAGE) ||
+      availableVoices.find((voice) => voice.lang.startsWith(SPEECH_CONFIG.PREFERRED_LANGUAGE.split('-')[0]))
+
+    // If no preferred voice, try with an English voice
+    const fallbackVoice =
+      availableVoices.find((voice) => voice.lang === "en-US") ||
+      availableVoices.find((voice) => voice.lang.startsWith("en"))
+
+    // Use any available voice if no preferred or English
+    const voice = preferredVoice || fallbackVoice || availableVoices[0] || null
+
+    setSelectedVoice(voice)
+
+    if (!voice) {
+      console.warn("No voice selected. Ensure your browser supports speech synthesis.")
+    } else {
+      console.log("Selected voice:", voice.name, voice.lang)
+    }
+  }, [])
 
   // Load available voices
   const loadVoices = useCallback(() => {
@@ -24,32 +49,7 @@ export function useSpeech() {
       setVoices(voicesList)
       selectDefaultVoice(voicesList)
     }
-  }, [synth])
-
-  // Select a default voice
-  const selectDefaultVoice = useCallback((availableVoices) => {
-    // Try to find a Spanish voice
-    const spanishVoice =
-      availableVoices.find((voice) => voice.lang === "es-ES") ||
-      availableVoices.find((voice) => voice.lang === "es-419") ||
-      availableVoices.find((voice) => voice.lang.startsWith("es"))
-
-    // If no Spanish voice, try with an English voice
-    const fallbackVoice =
-      availableVoices.find((voice) => voice.lang === "en-US") ||
-      availableVoices.find((voice) => voice.lang.startsWith("en"))
-
-    // Use any available voice if no Spanish or English
-    const voice = spanishVoice || fallbackVoice || availableVoices[0] || null
-
-    setSelectedVoice(voice)
-
-    if (!voice) {
-      console.warn("No voice selected. Ensure your browser supports speech synthesis.")
-    } else {
-      console.log("Selected voice:", voice.name, voice.lang)
-    }
-  }, [])
+  }, [synth, selectDefaultVoice])
 
   // Function to speak text
   const speak = useCallback(
@@ -78,9 +78,9 @@ export function useSpeech() {
 
         const utterance = new SpeechSynthesisUtterance(text)
         utterance.voice = selectedVoice
-        utterance.rate = 1.355 // Increase speed (1.0 is normal, 2.0 is double)
-        utterance.volume = 0.95 // Increase volume (1.0 is maximum)
-        utterance.pitch = 2.3 // Adjust pitch (optional)
+        utterance.rate = SPEECH_CONFIG.DEFAULT_RATE 
+        utterance.volume = SPEECH_CONFIG.DEFAULT_VOLUME
+        utterance.pitch = SPEECH_CONFIG.DEFAULT_PITCH
         setIsSpeaking(true)
 
         // Handle speech end
@@ -117,7 +117,7 @@ export function useSpeech() {
     }
   }, [isSpeaking, synth])
 
-  // Load voices on initialization
+  // Ensure loadVoices is stable and doesn't cause unnecessary re-renders
   useEffect(() => {
     if (isSupported) {
       loadVoices()

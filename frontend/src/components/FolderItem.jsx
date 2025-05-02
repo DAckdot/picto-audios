@@ -38,7 +38,7 @@ function FolderItem({ folder, isSelected, onSelectFolder, onFolderUpdated, onFol
 
     // Validate that the name is not empty
     if (!editingName.trim()) {
-      setStatus("Name cannot be empty")
+      setStatus("El nombre no puede estar vacío")
       setStatusClass("bg-red-100 text-red-700")
       return
     }
@@ -50,13 +50,13 @@ function FolderItem({ folder, isSelected, onSelectFolder, onFolderUpdated, onFol
     }
 
     try {
-      setStatus("Saving...")
+      setStatus("Guardando...")
       setStatusClass("bg-blue-100 text-blue-700")
 
       const result = await updateFolder(folder.id, editingName)
 
       if (result.success) {
-        setStatus("Folder updated!")
+        setStatus("¡Carpeta actualizada!")
         setStatusClass("bg-green-100 text-green-700")
 
         // Emit event to update the folder list
@@ -71,11 +71,11 @@ function FolderItem({ folder, isSelected, onSelectFolder, onFolderUpdated, onFol
           setStatus("")
         }, 1500)
       } else {
-        setStatus(result.message || "Error updating")
+        setStatus(result.message || "Error al actualizar")
         setStatusClass("bg-red-100 text-red-700")
       }
     } catch (error) {
-      console.error("Error updating folder:", error)
+      console.error("Error al actualizar carpeta:", error)
       setStatus(`Error: ${error.message}`)
       setStatusClass("bg-red-100 text-red-700")
     }
@@ -95,7 +95,7 @@ function FolderItem({ folder, isSelected, onSelectFolder, onFolderUpdated, onFol
     try {
       setIsDeleting(true)
 
-      console.log(`Deleting folder with ID: ${folder.id}`)
+      console.log(`Eliminando carpeta con ID: ${folder.id}`)
       const result = await deleteFolder(folder.id)
 
       if (result && result.message && result.message.includes("eliminada")) {
@@ -104,7 +104,7 @@ function FolderItem({ folder, isSelected, onSelectFolder, onFolderUpdated, onFol
         setShowDeleteModal(false)
 
         // Show success message momentarily
-        setStatus("Folder deleted successfully")
+        setStatus("Carpeta eliminada con éxito")
         setStatusClass("bg-green-100 text-green-700")
         setTimeout(() => {
           setStatus("")
@@ -115,10 +115,10 @@ function FolderItem({ folder, isSelected, onSelectFolder, onFolderUpdated, onFol
         setStatusClass("bg-red-100 text-red-700")
         setShowDeleteModal(false)
       } else {
-        throw new Error("Unexpected response from server")
+        throw new Error("Respuesta inesperada del servidor")
       }
     } catch (error) {
-      console.error("Error deleting folder:", error)
+      console.error("Error al eliminar carpeta:", error)
       setStatus(`Error: ${error.message}`)
       setStatusClass("bg-red-100 text-red-700")
       setShowDeleteModal(false)
@@ -180,7 +180,7 @@ function FolderItem({ folder, isSelected, onSelectFolder, onFolderUpdated, onFol
         <div className="actions flex items-center ml-2" onClick={(e) => e.stopPropagation()}>
           {isEditing ? (
             <>
-              <button onClick={saveEdit} className="p-1 text-blue-500 hover:text-blue-700" title="Save">
+              <button onClick={saveEdit} className="p-1 text-blue-500 hover:text-blue-700" title="Guardar">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-4 w-4"
@@ -192,7 +192,7 @@ function FolderItem({ folder, isSelected, onSelectFolder, onFolderUpdated, onFol
                 </svg>
               </button>
 
-              <button onClick={cancelEdit} className="p-1 text-red-500 hover:text-red-700" title="Cancel">
+              <button onClick={cancelEdit} className="p-1 text-red-500 hover:text-red-700" title="Cancelar">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-4 w-4"
@@ -206,7 +206,7 @@ function FolderItem({ folder, isSelected, onSelectFolder, onFolderUpdated, onFol
             </>
           ) : (
             <>
-              <button onClick={startEdit} className="p-1 text-gray-500 hover:text-gray-700" title="Edit name">
+              <button onClick={startEdit} className="p-1 text-gray-500 hover:text-gray-700" title="Editar nombre">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-4 w-4"
@@ -226,7 +226,7 @@ function FolderItem({ folder, isSelected, onSelectFolder, onFolderUpdated, onFol
               <button
                 onClick={showDeleteConfirmation}
                 className="p-1 ml-1 text-red-500 hover:text-red-700"
-                title="Delete folder"
+                title="Eliminar carpeta"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -258,13 +258,13 @@ function FolderItem({ folder, isSelected, onSelectFolder, onFolderUpdated, onFol
           onClick={cancelDelete}
         >
           <div className="bg-white rounded-lg p-6 shadow-lg max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-gray-800 mb-4">Confirm deletion</h3>
+            <h3 className="text-lg font-bold text-gray-800 mb-4">Confirmar eliminación</h3>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to delete the folder "<span className="font-semibold">{folder.name}</span>"?
+              ¿Estás seguro de que quieres eliminar la carpeta "<span className="font-semibold">{folder.name}</span>"?
               <br />
               <br />
               <span className="text-red-600 text-sm">
-                This action cannot be undone and will delete all folder contents.
+                Esta acción no se puede deshacer y eliminará todo el contenido de la carpeta.
               </span>
             </p>
             <div className="flex justify-end space-x-3">
@@ -272,14 +272,14 @@ function FolderItem({ folder, isSelected, onSelectFolder, onFolderUpdated, onFol
                 onClick={cancelDelete}
                 className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition-colors"
               >
-                Cancel
+                Cancelar
               </button>
               <button
                 onClick={confirmDelete}
                 className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                 disabled={isDeleting}
               >
-                {isDeleting ? "Deleting..." : "Delete"}
+                {isDeleting ? "Eliminando..." : "Eliminar"}
               </button>
             </div>
           </div>
