@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import PlaybackControls from "./PlaybackControls"
 import { useQueueHandler } from "../hooks/useQueueHandler"
 import { useSpeech } from "../hooks/useSpeech"
-import fallbackImage from "../../public/vite.svg"
+import fallbackImage from "../assets/default.png"
 
 function PistaReproduccion({ queue = [], onUpdateQueue, onWrappedAddToQueue }) {
   const defaultImage = fallbackImage
@@ -198,17 +198,7 @@ function PistaReproduccion({ queue = [], onUpdateQueue, onWrappedAddToQueue }) {
             onClick={wrappedRemoveLastPictogram}
             className="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition-colors flex items-center space-x-1 text-sm"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M19 7l-7 7-7-7" />
-            </svg>
-            <span>Delete Last</span>
+            <span>Borrar Ultimo</span>
           </button>
         </div>
       </div>

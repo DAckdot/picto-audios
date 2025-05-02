@@ -2,6 +2,9 @@ import React from "react"
 import ReactDOM from "react-dom/client"
 import "./index.css"
 import App from "./App"
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import HomePage from "./pages/HomePage";
+import SystemPictogramsPage from "./pages/SystemPictogramsPage";
 
 // Detect browser language and configure default voice
 const synth = window.speechSynthesis
@@ -19,6 +22,12 @@ synth.onvoiceschanged = () => {
 const root = ReactDOM.createRoot(document.getElementById("root"))
 root.render(
   <React.StrictMode>
-    <App />
+    <Router>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/system-pictograms" element={<SystemPictogramsPage />} />
+        <Route path="/" element={<App />} />
+      </Routes>
+    </Router>
   </React.StrictMode>,
 )

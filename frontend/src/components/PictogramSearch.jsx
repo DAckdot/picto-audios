@@ -1,36 +1,53 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 function PictogramSearch({ pictograms, onSearch }) {
   const [searchTerm, setSearchTerm] = useState("");
+  const firstRender = useRef(true);
+  const prevPictogramsRef = useRef(pictograms);
   
   // Esta función extrae el texto del pictograma de cualquier formato posible
   const getPictogramText = (pictogram) => {
     return pictogram.FRASE || pictogram.label || pictogram.texto || pictogram.NOMBRE || "";
   };
 
+  // Memoizamos la función de filtrado para evitar recálculos innecesarios
+  const filterPictograms = useCallback((term, pictos) => {
+    if (!term.trim()) {
+      return pictos;
+    }
+    
+    const termLower = term.toLowerCase();
+    return pictos.filter((pictogram) => {
+      const text = getPictogramText(pictogram);
+      return text.toLowerCase().includes(termLower);
+    });
+  }, []);
+
   const handleSearch = (event) => {
     const term = event.target.value;
     setSearchTerm(term);
     
-    if (!term.trim()) {
-      // Si el término de búsqueda está vacío, mostrar todos los pictogramas
-      onSearch(pictograms);
-      return;
-    }
-    
-    const termLower = term.toLowerCase();
-    const filteredPictograms = pictograms.filter((pictogram) => {
-      const text = getPictogramText(pictogram);
-      return text.toLowerCase().includes(termLower);
-    });
-    
-    onSearch(filteredPictograms);
+    // Aplicamos el filtrado y notificamos al componente padre
+    const filteredResults = filterPictograms(term, pictograms);
+    onSearch(filteredResults);
   };
 
-  // Al montar el componente o cuando cambian los pictogramas, resetear los resultados
+  // Sólo actualizamos cuando cambian los pictogramas
   useEffect(() => {
-    onSearch(pictograms);
-  }, [pictograms, onSearch]);
+    // Si es el primer renderizado, no hacemos nada adicional
+    if (firstRender.current) {
+      firstRender.current = false;
+      prevPictogramsRef.current = pictograms;
+      return;
+    }
+
+    // Solo actualizamos si los pictogramas han cambiado realmente
+    if (prevPictogramsRef.current !== pictograms) {
+      prevPictogramsRef.current = pictograms;
+      const filteredResults = filterPictograms(searchTerm, pictograms);
+      onSearch(filteredResults);
+    }
+  }, [pictograms, filterPictograms]); // Eliminamos searchTerm de las dependencias
 
   return (
     <div className="search-bar mb-4">

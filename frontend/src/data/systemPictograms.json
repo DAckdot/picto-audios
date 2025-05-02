@@ -1,0 +1,398 @@
+[
+  {
+    "id": 1,
+    "name": "agua",
+    "path": "/src/assets/agua.png",
+    "label": "Agua"
+  },
+  {
+    "id": 2,
+    "name": "apestar",
+    "path": "/src/assets/apestar.png",
+    "label": "Apestar"
+  },
+  {
+    "id": 3,
+    "name": "aquí",
+    "path": "/src/assets/aquí.png",
+    "label": "Aquí"
+  },
+  {
+    "id": 4,
+    "name": "arreglar",
+    "path": "/src/assets/arreglar.png",
+    "label": "Arreglar"
+  },
+  {
+    "id": 5,
+    "name": "asustado",
+    "path": "/src/assets/asustado.png",
+    "label": "Asustado"
+  },
+  {
+    "id": 6,
+    "name": "ayuda",
+    "path": "/src/assets/ayuda.png",
+    "label": "Ayuda"
+  },
+  {
+    "id": 7,
+    "name": "baño_1",
+    "path": "/src/assets/baño (1).png",
+    "label": "Baño"
+  },
+  {
+    "id": 8,
+    "name": "baño",
+    "path": "/src/assets/baño.png",
+    "label": "Baño"
+  },
+  {
+    "id": 9,
+    "name": "beber_2",
+    "path": "/src/assets/beber (2).png",
+    "label": "Beber"
+  },
+  {
+    "id": 10,
+    "name": "buscar",
+    "path": "/src/assets/buscar.png",
+    "label": "Buscar"
+  },
+  {
+    "id": 11,
+    "name": "café",
+    "path": "/src/assets/café.png",
+    "label": "Café"
+  },
+  {
+    "id": 12,
+    "name": "calle",
+    "path": "/src/assets/calle.png",
+    "label": "Calle"
+  },
+  {
+    "id": 13,
+    "name": "cambiar",
+    "path": "/src/assets/cambiar.png",
+    "label": "Cambiar"
+  },
+  {
+    "id": 14,
+    "name": "cansado",
+    "path": "/src/assets/cansado.png",
+    "label": "Cansado"
+  },
+  {
+    "id": 15,
+    "name": "casa_rural",
+    "path": "/src/assets/casa rural.png",
+    "label": "Casa rural"
+  },
+  {
+    "id": 16,
+    "name": "cepillar_los_dientes",
+    "path": "/src/assets/cepillar los dientes.png",
+    "label": "Cepillar los dientes"
+  },
+  {
+    "id": 17,
+    "name": "cocina",
+    "path": "/src/assets/cocina.png",
+    "label": "Cocina"
+  },
+  {
+    "id": 18,
+    "name": "comer",
+    "path": "/src/assets/comer.png",
+    "label": "Comer"
+  },
+  {
+    "id": 19,
+    "name": "comida",
+    "path": "/src/assets/comida.png",
+    "label": "Comida"
+  },
+  {
+    "id": 20,
+    "name": "default",
+    "path": "/src/assets/default.png",
+    "label": "Default"
+  },
+  {
+    "id": 21,
+    "name": "dolor_de_cabeza",
+    "path": "/src/assets/dolor de cabeza.png",
+    "label": "Dolor de cabeza"
+  },
+  {
+    "id": 22,
+    "name": "dolor",
+    "path": "/src/assets/dolor.png",
+    "label": "Dolor"
+  },
+  {
+    "id": 23,
+    "name": "dormir",
+    "path": "/src/assets/dormir.png",
+    "label": "Dormir"
+  },
+  {
+    "id": 24,
+    "name": "dormitorio",
+    "path": "/src/assets/dormitorio.png",
+    "label": "Dormitorio"
+  },
+  {
+    "id": 25,
+    "name": "escuchar",
+    "path": "/src/assets/escuchar.png",
+    "label": "Escuchar"
+  },
+  {
+    "id": 26,
+    "name": "familia",
+    "path": "/src/assets/familia.png",
+    "label": "Familia"
+  },
+  {
+    "id": 27,
+    "name": "feliz",
+    "path": "/src/assets/feliz.png",
+    "label": "Feliz"
+  },
+  {
+    "id": 28,
+    "name": "fonoaudiólogo",
+    "path": "/src/assets/fonoaudiólogo.png",
+    "label": "Fonoaudiólogo"
+  },
+  {
+    "id": 29,
+    "name": "fruta",
+    "path": "/src/assets/fruta.png",
+    "label": "Fruta"
+  },
+  {
+    "id": 30,
+    "name": "hablar_lento",
+    "path": "/src/assets/hablar lento.png",
+    "label": "Hablar lento"
+  },
+  {
+    "id": 31,
+    "name": "hablar",
+    "path": "/src/assets/hablar.png",
+    "label": "Hablar"
+  },
+  {
+    "id": 32,
+    "name": "hacer",
+    "path": "/src/assets/hacer.png",
+    "label": "Hacer"
+  },
+  {
+    "id": 33,
+    "name": "hospital",
+    "path": "/src/assets/hospital.png",
+    "label": "Hospital"
+  },
+  {
+    "id": 34,
+    "name": "ir_1",
+    "path": "/src/assets/ir (1).png",
+    "label": "Ir"
+  },
+  {
+    "id": 35,
+    "name": "jugo",
+    "path": "/src/assets/jugo.png",
+    "label": "Jugo"
+  },
+  {
+    "id": 36,
+    "name": "leche",
+    "path": "/src/assets/leche.png",
+    "label": "Leche"
+  },
+  {
+    "id": 37,
+    "name": "levantar_la_mano",
+    "path": "/src/assets/levantar la mano.png",
+    "label": "Levantar la mano"
+  },
+  {
+    "id": 38,
+    "name": "mamá",
+    "path": "/src/assets/mamá.png",
+    "label": "Mamá"
+  },
+  {
+    "id": 39,
+    "name": "medicamento",
+    "path": "/src/assets/medicamento.png",
+    "label": "Medicamento"
+  },
+  {
+    "id": 40,
+    "name": "menos",
+    "path": "/src/assets/menos.png",
+    "label": "Menos"
+  },
+  {
+    "id": 41,
+    "name": "molesto",
+    "path": "/src/assets/molesto.png",
+    "label": "Molesto"
+  },
+  {
+    "id": 42,
+    "name": "más",
+    "path": "/src/assets/más.png",
+    "label": "Más"
+  },
+  {
+    "id": 43,
+    "name": "no_quiero",
+    "path": "/src/assets/no quiero.png",
+    "label": "No quiero"
+  },
+  {
+    "id": 44,
+    "name": "no",
+    "path": "/src/assets/no.png",
+    "label": "No"
+  },
+  {
+    "id": 45,
+    "name": "pan",
+    "path": "/src/assets/pan.png",
+    "label": "Pan"
+  },
+  {
+    "id": 46,
+    "name": "papá",
+    "path": "/src/assets/papá.png",
+    "label": "Papá"
+  },
+  {
+    "id": 47,
+    "name": "parar",
+    "path": "/src/assets/parar.png",
+    "label": "Parar"
+  },
+  {
+    "id": 48,
+    "name": "pasear",
+    "path": "/src/assets/pasear.png",
+    "label": "Pasear"
+  },
+  {
+    "id": 49,
+    "name": "picto_ex",
+    "path": "/src/assets/picto_ex.png",
+    "label": "Ejemplo"
+  },
+  {
+    "id": 50,
+    "name": "quién",
+    "path": "/src/assets/quién.png",
+    "label": "¿Quién?"
+  },
+  {
+    "id": 51,
+    "name": "qué",
+    "path": "/src/assets/qué.png",
+    "label": "¿Qué?"
+  },
+  {
+    "id": 52,
+    "name": "señalar",
+    "path": "/src/assets/señalar.png",
+    "label": "Señalar"
+  },
+  {
+    "id": 53,
+    "name": "sopa_de_fideos",
+    "path": "/src/assets/sopa de fideos.png",
+    "label": "Sopa de fideos"
+  },
+  {
+    "id": 54,
+    "name": "sí",
+    "path": "/src/assets/sí.png",
+    "label": "Sí"
+  },
+  {
+    "id": 55,
+    "name": "traer",
+    "path": "/src/assets/traer.png",
+    "label": "Traer"
+  },
+  {
+    "id": 56,
+    "name": "triste",
+    "path": "/src/assets/triste.png",
+    "label": "Triste"
+  },
+  {
+    "id": 57,
+    "name": "tú",
+    "path": "/src/assets/tú.png",
+    "label": "Tú"
+  },
+  {
+    "id": 58,
+    "name": "venir",
+    "path": "/src/assets/venir.png",
+    "label": "Venir"
+  },
+  {
+    "id": 59,
+    "name": "ver",
+    "path": "/src/assets/ver.png",
+    "label": "Ver"
+  },
+  {
+    "id": 60,
+    "name": "vestir",
+    "path": "/src/assets/vestir.png",
+    "label": "Vestir"
+  },
+  {
+    "id": 61,
+    "name": "viajar",
+    "path": "/src/assets/viajar.png",
+    "label": "Viajar"
+  },
+  {
+    "id": 62,
+    "name": "yo_quiero",
+    "path": "/src/assets/yo quiero.png",
+    "label": "Yo quiero"
+  },
+  {
+    "id": 63,
+    "name": "yo",
+    "path": "/src/assets/yo.png",
+    "label": "Yo"
+  },
+  {
+    "id": 64,
+    "name": "como_te_llamas",
+    "path": "/src/assets/¿cómo te llamas.png",
+    "label": "¿Cómo te llamas?"
+  },
+  {
+    "id": 65,
+    "name": "donde_esta",
+    "path": "/src/assets/¿dónde está.png",
+    "label": "¿Dónde está?"
+  },
+  {
+    "id": 66,
+    "name": "que_es_eso",
+    "path": "/src/assets/¿qué es eso.png",
+    "label": "¿Qué es eso?"
+  }
+]

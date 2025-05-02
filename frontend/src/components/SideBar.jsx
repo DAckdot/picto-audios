@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import FolderItem from "./FolderItem"
 import { fetchFoldersByUser, createFolder, fetchUsers } from "../api"
+import { Link } from "react-router-dom"
 
 function SideBar({ userId, selectedFolder, onSelectFolder, onChangeUser }) {
   const [searchQuery, setSearchQuery] = useState("")
@@ -15,6 +16,9 @@ function SideBar({ userId, selectedFolder, onSelectFolder, onChangeUser }) {
   const [isCreatingFolder, setIsCreatingFolder] = useState(false)
   const [folderStatus, setFolderStatus] = useState("")
   const [folderStatusClass, setFolderStatusClass] = useState("")
+
+  // Constante para identificar la "carpeta" de pictogramas del sistema
+  const SYSTEM_PICTOGRAMS_ID = "system"
 
   const filteredFolders = searchQuery.trim()
     ? folders.filter((folder) => folder.NOMBRE.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -252,6 +256,34 @@ function SideBar({ userId, selectedFolder, onSelectFolder, onChangeUser }) {
           <div className="flex flex-col h-full">
             <div className="p-4 pb-2">
               <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Carpetas</h2>
+            </div>
+            
+            {/* System Pictograms Folder Button */}
+            <div className="px-4 mb-2">
+              <button
+                onClick={() => onSelectFolder(SYSTEM_PICTOGRAMS_ID)}
+                className={`w-full flex items-center p-2 rounded-lg transition-colors ${
+                  selectedFolder === SYSTEM_PICTOGRAMS_ID
+                    ? "bg-lime-100 text-lime-700 border-2 border-lime-400"
+                    : "bg-white hover:bg-gray-50 text-gray-700 border border-gray-300"
+                }`}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+                <span className="text-sm font-medium">Pictogramas por defecto</span>
+              </button>
             </div>
             
             {/* Folders Section */}
