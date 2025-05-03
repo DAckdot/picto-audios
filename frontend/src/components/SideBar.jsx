@@ -177,18 +177,19 @@ function SideBar({ userId, selectedFolder, onSelectFolder, onChangeUser }) {
   }, [userId, loadFolders]);
 
   return (
-    <aside className="bg-gray-100 w-64 border-r border-gray-200 h-full flex-shrink-0 flex flex-col">
-      <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-800">Usuario: {userId}</h2>
+    <aside className="bg-gray-100 w-60 border-r border-gray-200 h-full flex-shrink-0 flex flex-col overflow-hidden">
+      {/* Header de usuario - más compacto */}
+      <div className="py-2 px-3 border-b border-gray-200 flex items-center justify-between">
+        <h2 className="text-xs font-semibold text-gray-800">Usuario: {userId}</h2>
         <div className="relative">
           <button
             onClick={toggleUserDropdown}
-            className="p-2 rounded-md hover:bg-gray-200 transition-colors"
+            className="p-1 rounded-md hover:bg-gray-200 transition-colors"
             title="Cambiar usuario"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-gray-700"
+              className="h-4 w-4 text-gray-700"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -233,7 +234,8 @@ function SideBar({ userId, selectedFolder, onSelectFolder, onChangeUser }) {
         </div>
       </div>
 
-      <div className="p-4 border-b border-gray-200">
+      {/* Buscador de carpetas - más compacto */}
+      <div className="py-2 px-3 border-b border-gray-200">
         <input
           type="text"
           placeholder="Buscar carpetas..."
@@ -241,36 +243,58 @@ function SideBar({ userId, selectedFolder, onSelectFolder, onChangeUser }) {
           onChange={(e) => setSearchQuery(e.target.value)}
           id="search-folders"
           name="search-folders"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 focus:ring-2 focus:ring-lime-400 focus:outline-none"
+          className="w-full px-2 py-1 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 focus:ring-2 focus:ring-lime-400 focus:outline-none"
         />
       </div>
 
-      {folderStatus && <div className={`p-2 m-2 text-sm rounded ${folderStatusClass}`}>{folderStatus}</div>}
+      {folderStatus && <div className={`p-1 mx-2 my-1 text-xs rounded ${folderStatusClass}`}>{folderStatus}</div>}
 
-      <div className="flex flex-col flex-grow">
+      <div className="flex flex-col flex-grow overflow-hidden">
         {loading ? (
-          <div className="p-4 text-center text-gray-500">Cargando carpetas...</div>
+          <div className="p-2 text-center text-gray-500 text-sm">Cargando carpetas...</div>
         ) : error ? (
-          <div className="p-4 text-center text-red-500">{error}</div>
+          <div className="p-2 text-center text-red-500 text-sm">{error}</div>
         ) : (
-          <div className="flex flex-col h-full">
-            <div className="p-4 pb-2">
-              <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Carpetas</h2>
+          <div className="flex flex-col h-full overflow-hidden">
+            <div className="p-2 flex justify-between items-center">
+              <h2 className="text-xs font-semibold text-gray-700 uppercase tracking-wider">Carpetas</h2>
+              <button
+                onClick={addFolder}
+                className="px-2 py-1 bg-lime-400 text-white rounded hover:bg-lime-500 transition-colors flex items-center text-xs shadow-sm"
+                disabled={isCreatingFolder}
+                title="Añadir carpeta"
+              >
+                {isCreatingFolder ? (
+                  <div className="animate-spin rounded-full h-3 w-3 border-t-2 border-b-2 border-white"></div>
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M12 4v16m8-8H4" />
+                  </svg>
+                )}
+                <span className="ml-1">{isCreatingFolder ? "..." : "Nueva"}</span>
+              </button>
             </div>
             
             {/* System Pictograms Folder Button */}
-            <div className="px-4 mb-2">
+            <div className="px-2 mb-1">
               <button
                 onClick={() => onSelectFolder(SYSTEM_PICTOGRAMS_ID)}
-                className={`w-full flex items-center p-2 rounded-lg transition-colors ${
+                className={`w-full flex items-center p-1 rounded-lg transition-colors text-sm ${
                   selectedFolder === SYSTEM_PICTOGRAMS_ID
-                    ? "bg-lime-100 text-lime-700 border-2 border-lime-400"
+                    ? "bg-lime-100 text-lime-700 border border-lime-400"
                     : "bg-white hover:bg-gray-50 text-gray-700 border border-gray-300"
                 }`}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 mr-2"
+                  className="h-4 w-4 mr-1"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -282,22 +306,16 @@ function SideBar({ userId, selectedFolder, onSelectFolder, onChangeUser }) {
                     d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                   />
                 </svg>
-                <span className="text-sm font-medium">Pictogramas por defecto</span>
+                <span className="text-xs font-medium">Pictogramas por defecto</span>
               </button>
             </div>
             
-            {/* Folders Section */}
-            <div
-              className="px-4 overflow-y-auto flex-grow"
-              style={{
-                maxHeight: "calc(3 * 4rem)", // Limit to 3 folders (each ~4rem tall)
-                minHeight: "12rem", // Ensure a minimum height for responsiveness
-              }}
-            >
+            {/* Folders Section - con scroll */}
+            <div className="px-2 overflow-y-auto flex-grow">
               {filteredFolders.length === 0 ? (
-                <div className="text-center text-gray-500 mb-4">No se encontraron carpetas</div>
+                <div className="text-center text-gray-500 text-xs my-2">No se encontraron carpetas</div>
               ) : (
-                <ul className="space-y-2">
+                <ul className="space-y-1">
                   {filteredFolders.map((folder) => (
                     <li key={folder.COD_CARPETA}>
                       <FolderItem
@@ -314,30 +332,6 @@ function SideBar({ userId, selectedFolder, onSelectFolder, onChangeUser }) {
                   ))}
                 </ul>
               )}
-            </div>
-            
-            <div className="p-4 mt-auto">
-              <button
-                onClick={addFolder}
-                className="w-full px-4 py-3 bg-lime-400 text-white rounded-lg flex items-center justify-center hover:bg-lime-500 transition-colors"
-                disabled={isCreatingFolder}
-              >
-                {isCreatingFolder ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
-                ) : (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6 mr-2"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M12 4v16m8-8H4" />
-                  </svg>
-                )}
-                {isCreatingFolder ? "Creando..." : "Añadir Carpeta"}
-              </button>
             </div>
           </div>
         )}

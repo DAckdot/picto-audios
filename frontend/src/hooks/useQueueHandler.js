@@ -8,13 +8,13 @@ export function useQueueHandler(initialQueue = []) {
 
   // Ensure clearQueue is not called unnecessarily
   const clearQueue = useCallback(() => {
-    console.log("Clearing queue");
+    console.log("Limpiando cola");
     setQueue([]);
   }, []);
 
   // Reset queue with new items
   const setQueueItems = useCallback((newItems) => {
-    console.log("Setting queue items:", newItems.length);
+    console.log("Estableciendo elementos de la cola:", newItems.length);
     setQueue([...newItems]);
   }, []);
 
@@ -22,7 +22,7 @@ export function useQueueHandler(initialQueue = []) {
   const addToQueue = useCallback((pictogram) => {
     if (!pictogram) return;
     
-    console.log("Adding to queue:", pictogram.FRASE || pictogram.label);
+    console.log("Añadiendo a la cola:", pictogram.FRASE || pictogram.label);
     
     // Check if pictogram already exists by ID or some unique property
     setQueue(prevQueue => {
@@ -33,11 +33,11 @@ export function useQueueHandler(initialQueue = []) {
       );
       
       if (existingIndex >= 0) {
-        console.log("Pictogram already exists in queue, not adding again");
+        console.log("El pictograma ya existe en la cola, no se añadirá de nuevo");
         return prevQueue; // Already exists, don't add
       }
       
-      console.log("Adding new pictogram to queue, new length:", prevQueue.length + 1);
+      console.log("Añadiendo nuevo pictograma a la cola, nueva longitud:", prevQueue.length + 1);
       const newQueue = [...prevQueue, pictogram];
       return newQueue;
     });
@@ -46,7 +46,7 @@ export function useQueueHandler(initialQueue = []) {
   // Remove an element at a specific index
   const removeFromQueue = useCallback((index) => {
     if (index >= 0 && index < queue.length) {
-      console.log("Removiendo pictograma en índice:", index);
+      console.log("Eliminando pictograma en índice:", index);
       setQueue((prevQueue) => {
         const newQueue = [...prevQueue];
         newQueue.splice(index, 1);
@@ -61,7 +61,7 @@ export function useQueueHandler(initialQueue = []) {
   // Remove the last element from the queue
   const removeLastPictogram = useCallback(() => {
     if (queue.length > 0) {
-      console.log("Removiendo último pictograma de la cola");
+      console.log("Eliminando último pictograma de la cola");
       setQueue((prevQueue) => {
         const newQueue = prevQueue.slice(0, -1);
         console.log("Nueva longitud de cola después de eliminar último:", newQueue.length);
@@ -91,31 +91,31 @@ export function useQueueHandler(initialQueue = []) {
   // Play the queue
   const playQueue = useCallback(async (speak) => {
     if (typeof speak !== "function") {
-      console.error("speak is not a function")
+      console.error("La función speak no es una función")
       return
     }
     
     try {
-      console.log("Starting playback of queue with", queue.length, "items");
+      console.log("Iniciando reproducción de cola con", queue.length, "elementos");
       
       for (const item of queue) {
         // Try to get the text of the pictogram from different possible properties
         const textToSpeak = item.FRASE || item.label || item.texto || item.NOMBRE || "";
 
         if (!textToSpeak) {
-          console.warn("Pictogram without text:", item)
+          console.warn("Pictograma sin texto:", item)
           continue // Skip this pictogram if it has no text
         }
 
-        console.log("Speaking:", textToSpeak);
+        console.log("Hablando:", textToSpeak);
         await speak(textToSpeak)
       }
-      console.log("Queue playback completed");
+      console.log("Reproducción de cola completada");
     } catch (error) {
       if (error === "interrupted") {
-        console.warn("Speech synthesis was interrupted.")
+        console.warn("La síntesis de voz fue interrumpida.")
       } else {
-        console.error("Error during speech synthesis:", error)
+        console.error("Error durante la síntesis de voz:", error)
       }
     }
   }, [queue]);
@@ -123,7 +123,7 @@ export function useQueueHandler(initialQueue = []) {
   // Stop playback
   const stopQueue = useCallback((stop) => {
     if (typeof stop !== "function") {
-      console.error("stop is not a function")
+      console.error("La función stop no es una función")
       return
     }
     stop()

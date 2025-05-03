@@ -8,10 +8,10 @@ import "./App.css"
 function App() {
   return (
     <Router>
-      <div className="flex flex-col min-h-screen">
-        {/* Navegación principal */}
-        <nav className="bg-blue-600 text-white p-4">
-          <div className="container mx-auto flex justify-between items-center">
+      <div className="flex flex-col h-screen w-screen overflow-hidden">
+        {/* Navegación principal - reducida en altura */}
+        <nav className="bg-blue-600 text-white py-2">
+          <div className="flex justify-between items-center px-4">
             <div className="text-xl font-bold">Picto Audios</div>
             <ul className="flex space-x-6">
               <li>
@@ -28,8 +28,8 @@ function App() {
           </div>
         </nav>
 
-        {/* Contenido principal */}
-        <div className="flex-1">
+        {/* Contenido principal - aprovecha todo el espacio disponible */}
+        <div className="flex-1 overflow-hidden">
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/about" element={<AboutPage />} />

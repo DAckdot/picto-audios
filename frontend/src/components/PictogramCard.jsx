@@ -13,7 +13,7 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  // Variables for editing
+  // Variables para la edición
   const [showEditModal, setShowEditModal] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editingText, setEditingText] = useState("")
@@ -81,7 +81,7 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
 
   const deletePictogram = async () => {
     if (!pictogram.COD_PICTOGRAMA) {
-      setStatus("Cannot delete: ID not available")
+      setStatus("No se puede eliminar: ID no disponible")
       setStatusClass("bg-red-100 text-red-700")
       setShowDeleteModal(false)
       return
@@ -94,16 +94,16 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
       if (result && result.message && result.message.includes("eliminado")) {
         // Success - notify parent component
         onPictogramDeleted(pictogram.COD_PICTOGRAMA)
-        setStatus("Pictogram deleted")
+        setStatus("Pictograma eliminado")
         setStatusClass("bg-green-100 text-green-700")
       } else {
         // Error with server message
-        setStatus(result && result.message ? result.message : "Error deleting")
+        setStatus(result && result.message ? result.message : "Error al eliminar")
         setStatusClass("bg-red-100 text-red-700")
       }
     } catch (error) {
-      console.error("Error deleting pictogram:", error)
-      setStatus(`Error: ${error.message || "Unknown error"}`)
+      console.error("Error al eliminar pictograma:", error)
+      setStatus(`Error: ${error.message || "Error desconocido"}`)
       setStatusClass("bg-red-100 text-red-700")
     } finally {
       setIsDeleting(false)
@@ -192,7 +192,7 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
 
   const saveEdit = async () => {
     if (!pictogram.COD_PICTOGRAMA) {
-      setStatus("Cannot edit: ID not available")
+      setStatus("No se puede editar: ID no disponible")
       setStatusClass("bg-red-100 text-red-700")
       setShowEditModal(false)
       return
@@ -201,42 +201,42 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
     try {
       setIsEditing(true)
 
-      // Prepare data for update
+      // Preparar datos para actualización
       const updateData = {}
 
-      // ALWAYS include the current phrase or the edited phrase
+      // SIEMPRE incluir la frase actual o la frase editada
       updateData.FRASE = editingText.trim() || pictogram.FRASE || pictogram.label || ""
 
-      // If a new image was selected
+      // Si se seleccionó una nueva imagen
       if (editingImage) {
         const compressedImage = await compressImageToBase64(editingImage)
         updateData.PHOTO = compressedImage
       }
 
-      // Check if there's data to update
+      // Verificar si hay datos para actualizar
       if (updateData.FRASE === (pictogram.FRASE || pictogram.label || "") && !editingImage) {
-        setStatus("No changes to save")
+        setStatus("No hay cambios para guardar")
         setStatusClass("bg-yellow-100 text-yellow-700")
         setShowEditModal(false)
         setIsEditing(false)
         return
       }
 
-      console.log("Sending update with data:", {
+      console.log("Enviando actualización con datos:", {
         id: pictogram.COD_PICTOGRAMA,
         FRASE: updateData.FRASE,
-        hasImage: editingImage ? "Yes" : "No",
+        hasImage: editingImage ? "Sí" : "No",
       })
 
-      // Perform the update
+      // Realizar la actualización
       const result = await updatePictogram(pictogram.COD_PICTOGRAMA, updateData)
 
       if (result.success) {
-        // Successful update
-        setStatus("Pictogram updated")
+        // Actualización exitosa
+        setStatus("Pictograma actualizado")
         setStatusClass("bg-green-100 text-green-700")
 
-        // Notify the parent component about the update
+        // Notificar al componente padre sobre la actualización
         const updatedPictogram = {
           ...pictogram,
           FRASE: updateData.FRASE,
@@ -245,19 +245,19 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
 
         onPictogramUpdated(updatedPictogram)
       } else {
-        // Error with server message
-        setStatus(result.message || "Error updating")
+        // Error con mensaje del servidor
+        setStatus(result.message || "Error al actualizar")
         setStatusClass("bg-red-100 text-red-700")
       }
     } catch (error) {
-      console.error("Error updating pictogram:", error)
-      setStatus(`Error: ${error.message || "Unknown error"}`)
+      console.error("Error al actualizar pictograma:", error)
+      setStatus(`Error: ${error.message || "Error desconocido"}`)
       setStatusClass("bg-red-100 text-red-700")
     } finally {
       setIsEditing(false)
       setShowEditModal(false)
 
-      // Clear the message after a few seconds
+      // Limpiar el mensaje después de unos segundos
       setTimeout(() => {
         setStatus("")
       }, 3000)
@@ -272,8 +272,8 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
       >
         <img
           src={getImageSource(pictogram) || "/placeholder.svg"}
-          alt={pictogram.FRASE || pictogram.label || "Pictogram"}
-          className="object-contain h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24"
+          alt={pictogram.FRASE || pictogram.label || "Pictograma"}
+          className="object-contain h-20 w-20 sm:h-24 sm:w-24 md:h-28 md:w-28"
           onError={handleImageError}
         />
         <p className="text-sm sm:text-base md:text-sm font-medium text-lime-700 mt-2 text-center leading-tight">
@@ -286,7 +286,7 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
             <button
               onClick={openEditModal}
               className="p-1 bg-blue-500 text-white rounded-full hover:bg-blue-600 shadow-md"
-              title="Edit pictogram"
+              title="Editar pictograma"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -306,7 +306,7 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
             <button
               onClick={confirmDelete}
               className="p-1 bg-red-500 text-white rounded-full hover:bg-red-600 shadow-md"
-              title="Delete pictogram"
+              title="Eliminar pictograma"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -337,27 +337,27 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
           onClick={cancelDelete}
         >
           <div className="bg-white rounded-lg p-6 shadow-lg max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-gray-800 mb-4">Confirm deletion</h3>
+            <h3 className="text-lg font-bold text-gray-800 mb-4">Confirmar eliminación</h3>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to delete the pictogram "
+              ¿Está seguro de querer eliminar el pictograma "
               <span className="font-semibold">{pictogram.FRASE || pictogram.label}</span>"?
               <br />
               <br />
-              <span className="text-red-600 text-sm">This action cannot be undone.</span>
+              <span className="text-red-600 text-sm">Esta acción no se puede deshacer.</span>
             </p>
             <div className="flex justify-end space-x-3">
               <button
                 onClick={cancelDelete}
                 className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition-colors"
               >
-                Cancel
+                Cancelar
               </button>
               <button
                 onClick={deletePictogram}
                 className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                 disabled={isDeleting}
               >
-                {isDeleting ? "Deleting..." : "Delete"}
+                {isDeleting ? "Eliminando..." : "Eliminar"}
               </button>
             </div>
           </div>
@@ -371,29 +371,29 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
           onClick={cancelEdit}
         >
           <div className="bg-white rounded-lg p-6 shadow-lg max-w-md w-full" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-gray-800 mb-4">Edit Pictogram</h3>
+            <h3 className="text-lg font-bold text-gray-800 mb-4">Editar Pictograma</h3>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Text:</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Texto:</label>
               <input
                 value={editingText}
                 onChange={(e) => setEditingText(e.target.value)}
                 type="text"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                placeholder="Enter new text"
+                placeholder="Introduce nuevo texto"
               />
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Image:</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Imagen:</label>
               <div className="flex items-center">
                 <img
                   src={editingPreviewImage || getImageSource(pictogram)}
-                  alt="Preview"
+                  alt="Vista previa"
                   className="h-20 w-20 object-contain border border-gray-300 rounded mr-3"
                 />
                 <label className="cursor-pointer px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                  <span>Change image</span>
+                  <span>Cambiar imagen</span>
                   <input type="file" className="hidden" accept="image/*" onChange={handleEditImageUpload} />
                 </label>
               </div>
@@ -404,14 +404,14 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
                 onClick={cancelEdit}
                 className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition-colors"
               >
-                Cancel
+                Cancelar
               </button>
               <button
                 onClick={saveEdit}
                 className="px-4 py-2 bg-lime-500 text-white rounded hover:bg-lime-600 transition-colors"
                 disabled={isEditing || (!editingText && !editingImage)}
               >
-                {isEditing ? "Saving..." : "Save"}
+                {isEditing ? "Guardando..." : "Guardar"}
               </button>
             </div>
           </div>

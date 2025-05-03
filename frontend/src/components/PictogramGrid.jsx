@@ -252,66 +252,43 @@ const uploadPictogram = async () => {
   }, [folderId]);
 
   return (
-    <div className="p-4 h-full overflow-auto custom-scrollbar md:overflow-scroll">
-      {/* Error alert */}
-      {errorMessage && (
-        <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          <strong className="font-bold">Error: </strong>
-          <span className="block sm:inline">{errorMessage}</span>
-        </div>
-      )}
-
-      {/* Success message */}
-      {successMessage && (
-        <div className="mb-4 bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded">
-          <strong className="font-bold">Estado: </strong>
-          <span className="block sm:inline">{successMessage}</span>
-        </div>
-      )}
-
-      {/* Loading indicator for pictograms */}
-      {loadingPictograms ? (
-        <div className="flex items-center justify-center p-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-500 mr-2"></div>
-          <span>Cargando pictogramas...</span>
-        </div>
-      ) : pictograms.length === 0 ? (
-        <div className="flex flex-col items-center space-y-6">
-          <div className="text-center text-gray-500 mt-8 mb-4">No se encontraron pictogramas en esta carpeta (ID: {folderId})</div>
-
-          <div
-            className="flex flex-col items-center justify-center bg-gray-200 border border-dashed border-gray-400 rounded-lg p-6 cursor-pointer hover:bg-gray-300 w-64 h-64"
-            onClick={openModal}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-16 w-16 text-gray-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M12 4v16m8-8H4" />
-            </svg>
-            <span className="text-gray-700 mt-4 font-medium">Añadir primer pictograma</span>
-            <span className="text-gray-500 text-sm mt-2 text-center">Haz clic para subir un pictograma a esta carpeta</span>
+    <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Mensajes de alerta y éxito - más compactos */}
+      <div className="px-2 pb-1">
+        {errorMessage && (
+          <div className="my-1 bg-red-100 border border-red-400 text-red-700 px-2 py-1 rounded text-sm">
+            <strong>Error: </strong>
+            <span>{errorMessage}</span>
           </div>
-        </div>
-      ) : (
-        <div>
+        )}
+
+        {successMessage && (
+          <div className="my-1 bg-blue-100 border border-blue-400 text-blue-700 px-2 py-1 rounded text-sm">
+            <strong>Estado: </strong>
+            <span>{successMessage}</span>
+          </div>
+        )}
+
+        {/* Componente de búsqueda - solo visible cuando hay pictogramas */}
+        {!loadingPictograms && pictograms.length > 0 && (
           <PictogramSearch pictograms={pictograms} onSearch={handleSearch} />
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mt-4">
-            {filteredPictograms.map((pictogram) => (
-              <PictogramCard
-                key={pictogram.COD_PICTOGRAMA || pictogram.id}
-                pictogram={pictogram}
-                onClick={() => handlePictogramClick(pictogram)}
-                onPictogramUpdated={handlePictogramUpdated}
-                onPictogramDeleted={handlePictogramDeleted}
-              />
-            ))}
+        )}
+      </div>
+
+      {/* Área de contenido principal con scroll */}
+      <div className="flex-1 overflow-auto px-2">
+        {/* Loading indicator for pictograms */}
+        {loadingPictograms ? (
+          <div className="flex items-center justify-center py-4">
+            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-green-500 mr-2"></div>
+            <span>Cargando pictogramas...</span>
+          </div>
+        ) : pictograms.length === 0 ? (
+          <div className="flex flex-col items-center my-4">
+            <div className="text-center text-gray-500 mb-2">No se encontraron pictogramas en esta carpeta (ID: {folderId})</div>
+
             <div
-              className="flex flex-col items-center justify-center bg-gray-200 border border-dashed border-gray-400 rounded-lg p-4 cursor-pointer hover:bg-gray-300"
+              className="flex flex-col items-center justify-center bg-gray-200 border border-dashed border-gray-400 rounded-lg p-4 cursor-pointer hover:bg-gray-300 w-48 h-48"
               onClick={openModal}
             >
               <svg
@@ -324,13 +301,42 @@ const uploadPictogram = async () => {
               >
                 <path d="M12 4v16m8-8H4" />
               </svg>
-              <span className="text-gray-500 mt-2">Subir Pictograma</span>
+              <span className="text-gray-700 mt-2 font-medium text-sm">Añadir primer pictograma</span>
+              <span className="text-gray-500 text-xs mt-1 text-center">Haz clic para subir un pictograma</span>
             </div>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 my-2">
+            {filteredPictograms.map((pictogram) => (
+              <PictogramCard
+                key={pictogram.COD_PICTOGRAMA || pictogram.id}
+                pictogram={pictogram}
+                onClick={() => handlePictogramClick(pictogram)}
+                onPictogramUpdated={handlePictogramUpdated}
+                onPictogramDeleted={handlePictogramDeleted}
+              />
+            ))}
+            <div
+              className="flex flex-col items-center justify-center bg-gray-200 border border-dashed border-gray-400 rounded-lg p-2 cursor-pointer hover:bg-gray-300"
+              onClick={openModal}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-8 w-8 text-gray-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M12 4v16m8-8H4" />
+              </svg>
+              <span className="text-gray-500 mt-1 text-xs">Subir Pictograma</span>
+            </div>
+          </div>
+        )}
+      </div>
 
-      {/* Loading modal for uploading pictogram */}
+      {/* Modales - no se modifican ya que no afectan al layout principal */}
       {isLoading && (
         <div className="modal-overlay flex items-center justify-center fixed inset-0 bg-black bg-opacity-50 z-50">
           <div className="bg-white p-5 rounded-lg shadow-lg text-center">
