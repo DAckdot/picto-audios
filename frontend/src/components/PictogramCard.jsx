@@ -148,7 +148,7 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
     }
   }
 
-  // Function to compress image before uploading
+  // Función mejorada para comprimir imágenes
   const compressImageToBase64 = (file) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
@@ -157,7 +157,7 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
         img.src = event.target.result
         img.onload = () => {
           const canvas = document.createElement("canvas")
-          const maxSize = 120 // Maximum size for compatibility
+          const maxSize = 100 // Tamaño máximo reducido para mayor compresión
           let width = img.width
           let height = img.height
 
@@ -178,8 +178,9 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
           const ctx = canvas.getContext("2d")
           ctx.drawImage(img, 0, 0, width, height)
 
-          // 80% compression
-          const compressedImage = canvas.toDataURL("image/jpeg", 0.2)
+          // 85% de compresión (valor 0.15)
+          const compressedImage = canvas.toDataURL("image/jpeg", 0.15)
+          console.log(`Imagen comprimida: ${width}x${height} pixels, tamaño: ${compressedImage.length} caracteres`)
           resolve(compressedImage)
         }
         img.onerror = (error) => reject(error)

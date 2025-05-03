@@ -5,7 +5,7 @@ import PlaybackControls from "./PlaybackControls"
 import { useSpeech } from "../hooks/useSpeech"
 import fallbackImage from "../assets/default.png"
 
-function PistaReproduccion({ queue = [], onUpdateQueue }) {
+function PistaReproduccion({ queue = [], onUpdateQueue, onShowSystemPictograms }) {
   const defaultImage = fallbackImage
   const { speak, stop, isSpeaking } = useSpeech()
   
@@ -195,7 +195,30 @@ function PistaReproduccion({ queue = [], onUpdateQueue }) {
     <header className="bg-zinc-700 border-b border-lime-400 p-4 flex flex-col space-y-4">
       {/* Header Title */}
       <div className="flex items-center justify-between">
-        <h1 className="text-white text-lg font-semibold">Tablero de comunicacion</h1>
+        <div className="flex items-center">
+          <h1 className="text-white text-lg font-semibold">Tablero de comunicacion</h1>
+          <button
+            onClick={onShowSystemPictograms}
+            className="ml-4 p-2 bg-lime-500 text-white rounded-md hover:bg-lime-600 transition-colors flex items-center"
+            title="Mostrar pictogramas por defecto"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+              />
+            </svg>
+            <span className="ml-1 hidden sm:inline">Inicio</span>
+          </button>
+        </div>
         <div className="flex space-x-2">
           <button
             onClick={clearQueue}

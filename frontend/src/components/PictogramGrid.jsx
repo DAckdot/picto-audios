@@ -86,7 +86,7 @@ function PictogramGrid({ folderId, onPlayPictogram, onAddToQueue }) {
     }
   }
 
-  // Significantly improve image compression
+  // Mejora la compresión de imágenes (reducción significativa de tamaño)
   const compressImageToBase64 = (file) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
@@ -95,8 +95,8 @@ function PictogramGrid({ folderId, onPlayPictogram, onAddToQueue }) {
         img.src = event.target.result
         img.onload = () => {
           const canvas = document.createElement("canvas")
-          // Drastically reduce the maximum size to ensure compatibility
-          const maxSize = 120 // Slightly larger to maintain minimum acceptable quality
+          // Reducir el tamaño máximo a 100px para mayor compresión
+          const maxSize = 100
           let width = img.width
           let height = img.height
 
@@ -117,9 +117,9 @@ function PictogramGrid({ folderId, onPlayPictogram, onAddToQueue }) {
           const ctx = canvas.getContext("2d")
           ctx.drawImage(img, 0, 0, width, height)
 
-          // Use 80% compression (0.2 = 80% compression)
-          const compressedImage = canvas.toDataURL("image/jpeg", 0.2)
-          console.log(`Compressed image of ${width}x${height} pixels, size: ${compressedImage.length} characters`)
+          // Usar 0.15 para una compresión más agresiva (85% de compresión)
+          const compressedImage = canvas.toDataURL("image/jpeg", 0.15)
+          console.log(`Imagen comprimida: ${width}x${height} pixels, tamaño: ${compressedImage.length} caracteres`)
           resolve(compressedImage)
         }
         img.onerror = (error) => reject(error)
@@ -128,6 +128,7 @@ function PictogramGrid({ folderId, onPlayPictogram, onAddToQueue }) {
       reader.readAsDataURL(file)
     })
   }
+
 const uploadPictogram = async () => {
   if (!selectedFile || !newPictogramLabel.trim()) {
     alert("Por favor selecciona una imagen y proporciona una etiqueta.");

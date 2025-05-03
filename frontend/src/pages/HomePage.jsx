@@ -122,8 +122,15 @@ function HomePage() {
   // Manejador de clic para pictogramas del sistema
   const handleSystemPictogramClick = (pictogram) => {
     console.log("Pictograma del sistema clickeado:", pictogram.label);
-    speak(pictogram.label);
+    // Ya no reproduce automáticamente el audio, solo lo agrega a la cola
+    addToQueue(pictogram);
   };
+
+  // Función para mostrar los pictogramas por defecto desde el botón de casa
+  const showSystemPictogramsFromHeader = useCallback(() => {
+    console.log("Mostrando pictogramas por defecto desde el botón de casa");
+    selectFolder(SYSTEM_PICTOGRAMS_ID);
+  }, []);
 
   useEffect(() => {
     loadFolders()
@@ -135,6 +142,7 @@ function HomePage() {
       <PistaReproduccion 
         queue={queue} 
         onUpdateQueue={updateQueue}
+        onShowSystemPictograms={showSystemPictogramsFromHeader}
       />
 
       <div className="flex flex-1 overflow-hidden">
@@ -182,8 +190,7 @@ function HomePage() {
                       <PictogramCard
                         key={pictogram.id}
                         pictogram={pictogram}
-                        onClick={() => handleSystemPictogramClick(pictogram)}
-                        onAddToQueue={() => addToQueue(pictogram)}
+                        onClick={handleSystemPictogramClick}
                         disableEditDelete={true}
                       />
                     ))}
