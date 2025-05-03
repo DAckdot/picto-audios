@@ -215,8 +215,13 @@ const uploadPictogram = async () => {
   }
 
   const handlePictogramClick = (pictogram) => {
-    onPlayPictogram(pictogram)
+    // Solo agregamos a la cola sin reproducir sonido automáticamente
     onAddToQueue(pictogram)
+    // Mostramos feedback visual de que se agregó a la cola
+    setSuccessMessage(`Pictograma "${pictogram.FRASE || pictogram.label}" agregado a la cola`)
+    setTimeout(() => {
+      setSuccessMessage("")
+    }, 1500)
   }
 
   const handleSearch = (results) => {

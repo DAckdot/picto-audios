@@ -21,6 +21,7 @@ function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDele
   const [editingPreviewImage, setEditingPreviewImage] = useState(null)
 
   const handleClick = () => {
+    // Solo llamamos a onClick sin ninguna reproducción de audio automática
     onClick(pictogram)
   }
 

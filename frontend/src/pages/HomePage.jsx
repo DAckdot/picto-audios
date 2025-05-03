@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useCallback } from "react"
 import SideBar from "../components/SideBar"
 import PictogramGrid from "../components/PictogramGrid"
 import PistaReproduccion from "../components/PistaReproduccion"
@@ -25,9 +25,6 @@ function HomePage() {
   const [systemPictogramsList, setSystemPictogramsList] = useState([])
   const [filteredSystemPictograms, setFilteredSystemPictograms] = useState([])
   const [loadingSystemPictograms, setLoadingSystemPictograms] = useState(false)
-  
-  // Referencia para almacenar la función envuelta que viene de PistaReproduccion
-  const wrappedAddToQueueRef = useRef(null)
 
   const { speak } = useSpeech()
 
@@ -105,26 +102,22 @@ function HomePage() {
   const playPictogram = (pictogram) => {
     speak(pictogram.FRASE || pictogram.label)
   }
-
-  // Función para recibir la referencia a wrappedAddToQueue desde PistaReproduccion
-  const handleWrappedAddToQueue = useCallback((wrappedFunc) => {
-    wrappedAddToQueueRef.current = wrappedFunc;
-  }, []);
   
-  // Función de adición a la cola que usa la versión envuelta si está disponible
+  // Función para añadir a la cola (ahora permite duplicados)
   const addToQueue = useCallback((pictogram) => {
-    if (wrappedAddToQueueRef.current) {
-      // Si tenemos la función envuelta, la usamos para evitar bucles
-      wrappedAddToQueueRef.current(pictogram);
-    } else {
-      // Fallback a la implementación tradicional
-      setQueue((prevQueue) => [...prevQueue, pictogram]);
-    }
+    if (!pictogram) return;
+    
+    setQueue(prevQueue => {
+      // Ya no verificamos duplicados, simplemente añadimos el pictograma
+      return [...prevQueue, pictogram];
+    });
   }, []);
 
-  const updateQueue = (updatedQueue) => {
-    setQueue(updatedQueue)
-  }
+  // Manejador para actualizar la cola desde PistaReproduccion
+  const updateQueue = useCallback((updatedQueue) => {
+    console.log("Actualizando cola en HomePage:", updatedQueue.length, "items");
+    setQueue(updatedQueue);
+  }, []);
 
   // Manejador de clic para pictogramas del sistema
   const handleSystemPictogramClick = (pictogram) => {
@@ -141,8 +134,7 @@ function HomePage() {
       {/* Header */}
       <PistaReproduccion 
         queue={queue} 
-        onUpdateQueue={updateQueue} 
-        onWrappedAddToQueue={handleWrappedAddToQueue}
+        onUpdateQueue={updateQueue}
       />
 
       <div className="flex flex-1 overflow-hidden">
