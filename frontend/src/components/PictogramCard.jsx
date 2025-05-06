@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import defaultImage from "../assets/picto_ex.png"
+import defaultImage from "../assets/img/picto_ex.png"
 import { deletePictogram as apiDeletePictogram, updatePictogram } from "../api"
 
 function PictogramCard({ pictogram, onClick, onPictogramUpdated, onPictogramDeleted, disableEditDelete = false }) {

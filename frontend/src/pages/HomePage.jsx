@@ -10,7 +10,7 @@ import PictogramSearch from "../components/PictogramSearch"
 
 // Función para obtener URL de las imágenes
 const getImageUrl = (name) => {
-  return new URL(`../assets/${name}.png`, import.meta.url).href;
+  return new URL(`../assets/img/${name}.png`, import.meta.url).href;
 };
 
 // Identificador especial para la carpeta de pictogramas del sistema

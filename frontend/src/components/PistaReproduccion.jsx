@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import PlaybackControls from "./PlaybackControls"
 import { useSpeech } from "../hooks/useSpeech"
-import fallbackImage from "../assets/default.png"
+import fallbackImage from "../assets/img/default.png"
 
 function PistaReproduccion({ queue = [], onUpdateQueue, onShowSystemPictograms }) {
   const defaultImage = fallbackImage
